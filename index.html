@@ -696,12 +696,37 @@ tbody tr:hover{background:#fafbfc}
   function saveLocal() { try { localStorage.setItem(STORE, JSON.stringify(D)); } catch(e) {} }
   function save() { saveLocal(); if (CLOUD_ENABLED) syncToCloud(); }
 
+  function fixGarbled(s) {
+    if (typeof s !== 'string' || s.length === 0) return s;
+    var fixed = s;
+    for (var pass = 0; pass < 2; pass++) {
+      try {
+        var arr = new Uint8Array(fixed.length);
+        for (var k = 0; k < fixed.length; k++) arr[k] = fixed.charCodeAt(k) & 0xFF;
+        var next = new TextDecoder('utf-8').decode(arr);
+        if (next === fixed) break;
+        fixed = next;
+      } catch(e) { break; }
+    }
+    return fixed;
+  }
+  function fixObj(o) {
+    if (typeof o === 'string') return fixGarbled(o);
+    if (Array.isArray(o)) { var r = []; for (var jj = 0; jj < o.length; jj++) { if (o[jj] != null) r.push(fixObj(o[jj])); } return r; }
+    if (o && typeof o === 'object') {
+      var r2 = {};
+      for (var kk in o) { if (o.hasOwnProperty(kk)) r2[kk] = fixObj(o[kk]); }
+      return r2;
+    }
+    return o;
+  }
+
   function mergeFromCloud(cloud) {
     var arrFields = ['vocabulary','phrases','englishCheckins','reviewWords','dailyPhrases','customers','followLogs','equipmentArchive','inventory','faq','foreignEquipNotes','scripts','healthCheckins','exerciseRecords','bodyRecords'];
     for (var i = 0; i < arrFields.length; i++) {
       var f = arrFields[i];
-      var local = D[f] || [];
-      var remote = cloud[f] || [];
+      var local = fixObj(D[f] || []);
+      var remote = fixObj(cloud[f] || []);
       var seen = {};
       var merged = [];
       var combined = local.concat(remote);
