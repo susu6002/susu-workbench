@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>素素‑矿山设备业务工作台</title>
+<style>
+:root {
+  --bg:#f3f4f6; --white:#fff; --border:#e5e7eb;
+  --text:#1f2937; --text2:#6b7280; --text3:#9ca3af;
+  --blue:#2563eb; --blue-l:#eff6ff;
+  --green:#10b981; --green-l:#ecfdf5;
+  --orange:#f59e0b; --orange-l:#fffbeb;
+  --red:#ef4444; --red-l:#fef2f2;
+  --purple:#8b5cf6; --purple-l:#f5f3ff;
+  --sidebar-w:220px; --topbar-h:56px;
+  --radius:10px; --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{height:-webkit-fill-available}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--text);display:flex;min-height:100vh;min-height:100dvh;font-size:14px;line-height:1.6;
+  -webkit-overflow-scrolling:touch;overscroll-behavior:none;
+}
+/* Sidebar */
+.sidebar{width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid var(--border)}
+.sidebar-logo .name{font-size:16px;font-weight:700;color:var(--text)}
+.sidebar-logo .sub{font-size:11px;color:var(--text3);margin-top:2px}
+.sidebar-nav{flex:1;padding:8px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;margin:2px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;color:var(--text2);transition:all .15s;border:none;background:none;width:calc(100% - 20px);text-align:left}
+.nav-item:hover{background:#f9fafb;color:var(--text)}
+.nav-item.active{background:var(--blue-l);color:var(--blue);font-weight:600}
+.nav-icon{font-size:18px;width:22px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;padding:2px 6px;border-radius:10px;font-weight:600}
+/* Main */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+.topbar{height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:18px;font-weight:700;color:var(--text)}
+.topbar-right{margin-left:auto;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:16px}
+.today-date{color:var(--text3)}
+.content{padding:24px 28px;flex:1}
+.section{display:none}
+.section.active{display:block}
+/* Cards */
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);padding:20px 24px;margin-bottom:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6}
+.card-title{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.card-actions{display:flex;gap:8px}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:4px;padding:7px 14px;border-radius:6px;font-size:12.5px;cursor:pointer;border:1px solid transparent;font-weight:500;transition:all .15s;font-family:inherit}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-primary:hover{background:#1d4ed8}
+.btn-outline{background:var(--white);color:var(--text2);border-color:var(--border)}
+.btn-outline:hover{background:#f9fafb;color:var(--text)}
+.btn-sm{padding:4px 10px;font-size:11.5px}
+.btn-danger{color:var(--red);border-color:#fecaca}
+.btn-danger:hover{background:var(--red-l)}
+.btn-success{color:var(--green);border-color:#a7f3d0}
+/* Tags */
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:500;white-space:nowrap}
+.tag-blue{background:var(--blue-l);color:var(--blue)}
+.tag-green{background:var(--green-l);color:#059669}
+.tag-orange{background:var(--orange-l);color:#d97706}
+.tag-red{background:var(--red-l);color:#dc2626}
+.tag-purple{background:var(--purple-l);color:var(--purple)}
+.tag-gray{background:#f3f4f6;color:#6b7280}
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.stat-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);padding:16px 20px;display:flex;align-items:center;gap:14px}
+.stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.stat-info .stat-num{font-size:22px;font-weight:700;color:var(--text)}
+.stat-info .stat-label{font-size:12px;color:var(--text3);margin-top:2px}
+/* Sync bar */
+.sync-bar{padding:10px 14px;border-top:1px solid var(--border);margin-top:auto}
+.sync-bar .sync-label{font-size:11px;color:var(--text3);margin-bottom:8px;text-align:center}
+.sync-btns{display:flex;gap:6px}
+.sync-btns .btn{flex:1;justify-content:center;font-size:12px;padding:7px 0}
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#f9fafb;color:var(--text2);font-weight:600;padding:10px 12px;text-align:left;border-bottom:2px solid var(--border);font-size:12px;white-space:nowrap}
+tbody td{padding:10px 12px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tbody tr:hover{background:#fafbfc}
+.table-actions{display:flex;gap:4px}
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+/* Profile */
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.profile-item .label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.profile-item .value{font-size:14px;font-weight:500;color:var(--text)}
+/* Checkin */
+.checkin-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6}
+.checkin-date{font-size:12px;color:var(--text3);width:80px;flex-shrink:0}
+.checkin-content{flex:1;font-size:13px}
+.checkin-check{width:20px;height:20px;cursor:pointer;accent-color:var(--blue)}
+/* Vocab card */
+.vocab-card{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f9fafb;border-radius:8px;margin-bottom:8px}
+.vocab-card-col{display:flex;flex-direction:column;align-items:flex-start;padding:12px 16px;background:#f9fafb;border-radius:8px;margin-bottom:8px}
+.vocab-en{font-weight:600;color:var(--text);font-size:14px}
+.vocab-cn{color:var(--text2);font-size:13px}
+/* Script */
+.script-cat-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.script-item{background:#f9fafb;border-radius:8px;padding:12px 16px;margin-bottom:8px;border-left:3px solid var(--blue);display:flex;align-items:center;justify-content:space-between}
+.script-text{font-size:13px;color:var(--text);flex:1}
+/* Calendar */
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.calendar-day-name{font-size:11px;color:var(--text3);padding:4px 0;font-weight:600}
+.calendar-day{padding:8px 4px;border-radius:6px;cursor:pointer;font-size:12px;position:relative;transition:all .15s}
+.calendar-day:hover{background:#f3f4f6}
+.calendar-day.today{background:var(--blue-l);color:var(--blue);font-weight:700}
+.calendar-day.has-event::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--green)}
+.calendar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.calendar-month{font-size:15px;font-weight:700}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:999;justify-content:center;align-items:flex-start;padding-top:60px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--white);border-radius:12px;padding:24px;width:90%;max-width:520px;max-height:80vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{font-size:17px;margin-bottom:16px}
+.modal .form-group{margin-bottom:14px}
+.modal .form-group label{display:block;font-size:12.5px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.modal .form-group input,.modal .form-group select,.modal .form-group textarea{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;transition:border .15s}
+.modal .form-group input:focus,.modal .form-group select:focus,.modal .form-group textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.modal .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+/* Helpers */
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
+/* Selection Guide */
+.guide-section{margin-bottom:20px}
+.guide-section h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px;padding-left:10px;border-left:3px solid var(--blue)}
+.guide-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:12px}
+.guide-table th{background:#f0f4ff;color:#1e40af;font-weight:600;padding:8px 10px;text-align:left;font-size:12px}
+.guide-table td{padding:7px 10px;border-bottom:1px solid #f3f4f6;vertical-align:top;line-height:1.5}
+.guide-table td:first-child{white-space:nowrap;font-weight:600;color:var(--text)}
+.guide-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px}
+.guide-card{background:#f9fafb;border-radius:8px;padding:14px 16px;border-left:3px solid var(--blue)}
+.guide-card h5{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px}
+.guide-card p{font-size:12.5px;color:var(--text2);line-height:1.6;margin:0}
+.guide-card.orange{border-left-color:var(--orange)}
+.guide-card.purple{border-left-color:var(--purple)}
+.guide-card.red{border-left-color:var(--red)}
+/* Health */
+.health-reminder{background:#f9fafb;border-radius:8px;padding:14px 18px;flex:1;min-width:160px}
+.health-reminder .r-time{font-size:20px;font-weight:700;color:var(--text)}
+.health-reminder .r-label{font-size:12px;color:var(--text3)}
+.health-reminder .r-desc{font-size:12px;color:var(--text2)}
+/* Responsive */
+@media(max-width:900px){
+  body{flex-direction:column}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .25s;box-shadow:2px 0 12px rgba(0,0,0,.15);width:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .topbar{position:sticky;top:0;z-index:99}
+  .grid-2,.grid-3,.stats-row{grid-template-columns:1fr}
+  .profile-grid{grid-template-columns:1fr}
+  .table-wrap{overflow-x:auto}
+  .card{padding:14px 16px}
+  .card-header{flex-wrap:wrap;gap:8px}
+  .mob-nav{display:flex}
+  .hamburger{display:block}
+  .sync-bar{margin-top:8px}
+  .content{padding-bottom:70px !important}
+}
+.hamburger{display:none;background:none;border:none;font-size:22px;cursor:pointer;padding:4px 8px;color:var(--text);line-height:1}
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);z-index:99;padding:6px 4px;justify-content:space-around}
+.mob-nav button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;font-size:10px;color:var(--text3);cursor:pointer;padding:4px 2px;border-radius:6px;min-width:50px}
+.mob-nav button.active{color:var(--blue)}
+.mob-nav button .ni{font-size:18px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:199}
+.overlay.show{display:block}
+@media(min-width:901px){.overlay{display:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="name">素素</div>
+    <div class="sub">矿山设备业务工作台</div>
+  </div>
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-section="home">
+      <span class="nav-icon">🏠</span> 工作台首页
+    </button>
+    <button class="nav-item" data-section="english">
+      <span class="nav-icon">📖</span> 外贸英语学习
+    </button>
+    <button class="nav-item" data-section="customers">
+      <span class="nav-icon">👥</span> 客户跟进管理
+      <span class="nav-badge" id="customer-badge">0</span>
+    </button>
+    <button class="nav-item" data-section="equipment">
+      <span class="nav-icon">⚙️</span> 设备资料库
+    </button>
+    <button class="nav-item" data-section="scripts">
+      <span class="nav-icon">💬</span> 销售话术库
+    </button>
+    <button class="nav-item" data-section="health">
+      <span class="nav-icon">💪</span> 健康锻炼管理
+    </button>
+  </nav>
+  <div class="sync-bar">
+    <div class="sync-label">🔄 跨设备数据同步</div>
+    <div class="sync-btns">
+      <button class="btn btn-primary" id="btn-export">📤 导出</button>
+      <button class="btn btn-outline" id="btn-import">📥 导入</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ==================== OVERLAY ==================== -->
+<div class="overlay" id="sidebar-overlay"></div>
+
+<!-- ==================== MOBILE BOTTOM NAV ==================== -->
+<nav class="mob-nav" id="mob-nav">
+  <button data-section="home" class="active"><span class="ni">🏠</span>首页</button>
+  <button data-section="english"><span class="ni">📖</span>英语</button>
+  <button data-section="customers"><span class="ni">👥</span>客户</button>
+  <button data-section="equipment"><span class="ni">⚙️</span>设备</button>
+  <button data-section="scripts"><span class="ni">💬</span>话术</button>
+  <button data-section="health"><span class="ni">💪</span>健康</button>
+</nav>
+
+<!-- ==================== MAIN ==================== -->
+<div class="main">
+  <header class="topbar">
+    <button class="hamburger" id="hamburger-btn" title="菜单">☰</button>
+    <span class="topbar-title" id="topbar-title">工作台首页</span>
+    <div class="topbar-right">
+      <span>📍 河南郑州·上街区</span>
+      <span class="today-date" id="today-date"></span>
+    </div>
+  </header>
+  <div class="content">
+
+<!-- SECTION: HOME -->
+<section class="section active" id="section-home">
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-icon" style="background:#eff6ff;">👥</div><div class="stat-info"><div class="stat-num" id="stat-customers">0</div><div class="stat-label">跟进中客户</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#ecfdf5;">📖</div><div class="stat-info"><div class="stat-num" id="stat-vocab">0</div><div class="stat-label">已学单词</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#fffbeb;">⚙️</div><div class="stat-info"><div class="stat-num" id="stat-devices">0</div><div class="stat-label">在库设备</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#f5f3ff;">💪</div><div class="stat-info"><div class="stat-num" id="stat-exercise">0</div><div class="stat-label">连续锻炼天数</div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="icon">👤</span> 个人基础信息</span></div>
+    <div class="profile-grid">
+      <div class="profile-item"><div class="label">姓名</div><div class="value">素素</div></div>
+      <div class="profile-item"><div class="label">所在地点</div><div class="value">河南郑州·上街区</div></div>
+      <div class="profile-item"><div class="label">设备场地</div><div class="value">自有设备堆场</div></div>
+      <div class="profile-item"><div class="label">主营</div><div class="value">黎明重工精品二手矿山设备</div></div>
+      <div class="profile-item"><div class="label">业务规划</div><div class="value">国内销售 + 拓展外贸出海</div></div>
+      <div class="profile-item"><div class="label">获客渠道</div><div class="value">抖音 · 视频号短视频</div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-header"><span class="card-title"><span class="icon">📋</span> 待跟进客户</span></div><div id="home-recent-customers"></div></div>
+    <div class="card"><div class="card-header"><span class="card-title"><span class="icon">📝</span> 今日待办</span></div><div id="home-todos"></div></div>
+  </div>
+</section>
+
+<!-- SECTION: ENGLISH -->
+<section class="section" id="section-english">
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="icon">📖</span> 矿山设备外贸单词库</span><button class="btn btn-primary btn-sm" id="btn-add-vocab">+ 添加单词</button></div>
+    <div class="table-wrap"><table><thead><tr><th>英文</th><th>中文</th><th>分类</th><th>熟练度</th><th>操作</th></tr></thead><tbody id="vocab-tbody"></tbody></table></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title"><span class="icon">✉️</span> 外贸常用句子</span><button class="btn btn-primary btn-sm" id="btn-add-phrase">+ 添加句子</button></div>
+      <div id="phrases-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title"><span class="icon">✅</span> 每日学习打卡</span><button class="btn btn-primary btn-sm" id="btn-add-eng-checkin">+ 今日打卡</button></div>
+      <div id="english-checkin-list"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="icon">🗣️</span> 日常口语交流</span><button class="btn btn-primary btn-sm" id="btn-add-daily-phrase">+ 添加口语</button></div>
+    <div id="daily-phrases-container"></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="icon">🔁</span> 错题 & 不熟单词收集区</span><button class="btn btn-primary btn-sm" id="btn-add-review">+ 添加</button></div>
+    <div class="table-wrap"><table><thead><tr><th>英文</th><th>中文</th><th>错误次数</th><th>操作</th></tr></thead><tbody id="review-tbody"></tbody></table></div>
+  </div>
+</section>
+
+<!-- SECTION: CUSTOMERS -->
+<section class="section" id="section-customers">
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="icon">👥</span> 客户信息台账</span><button class="btn btn-primary btn-sm" id="btn-add-customer">+ 添加客户</button></div>
+    <div class="table-wrap"><table><thead><tr><th>客户姓名</th><th>来源</th><th>意向设备</th><th>需求</th><th>预算</th><th>进度</th><th>下次回访</th><th>操作</th></tr></thead><tbody id="customers-tbody"></tbody></table></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title"><span class="icon">📝</span> 跟进日志</span><button class="btn btn-primary btn-sm" id="btn-add-follow-log">+ 记录沟通</button></div>
+      <div id="follow-logs-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title"><span class="icon">📅</span> 客户回访日历</span></div>
+      <div class="calendar-header">
+        <button class="btn btn-outline btn-sm" id="cal-prev">◀</button>
+        <span class="calendar-month" id="calendar-month"></span>
+        <button class="btn btn-outline btn-sm" id="cal-next">▶</button>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION: EQUIPMENT -->
+<section class="section" id="section-equipment">
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="icon">📋</span> 黎明重工设备型号档案</span><button class="btn btn-primary btn-sm" id="btn-add-equip-archive">+ 添加设备</button></div>
+    <div class="table-wrap"><table><thead><tr><th>设备名称</th><th>型号</th><th>类别</th><th>主要参数</th><th>配置</th><th>优点</th><th>注意</th><th>操作</th></tr></thead><tbody id="equipment-archive-tbody"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="icon">🏗️</span> 场地现有精品设备清单</span><button class="btn btn-primary btn-sm" id="btn-add-inventory">+ 添加设备</button></div>
+    <div class="table-wrap"><table><thead><tr><th>设备名称</th><th>型号</th><th>数量</th><th>状态</th><th>成色</th><th>存放位置</th><th>操作</th></tr></thead><tbody id="inventory-tbody"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="icon">🧭</span> 设备选型指南</span><span style="font-size:12px;color:var(--text3);">参考手册 · 仅供内部使用</span></div>
+    <div class="guide-section">
+      <h4>一、按破碎阶段选</h4>
+      <table class="guide-table"><thead><tr><th>阶段</th><th>进料粒度</th><th>出料粒度</th><th>推荐设备</th><th>说明</th></tr></thead><tbody>
+        <tr><td>粗碎（一级破）</td><td>300-1200mm</td><td>100-300mm</td><td>颚式破碎机 PE系列</td><td>所有石料必经的第一道工序</td></tr>
+        <tr><td>中碎（二级破）</td><td>100-300mm</td><td>30-70mm</td><td>反击破 / 圆锥破</td><td>根据硬度选设备类型</td></tr>
+        <tr><td>细碎（三级破）</td><td>30-70mm</td><td>3-15mm</td><td>圆锥破（细腔）/ 反击破</td><td>追求粒型用反击破</td></tr>
+        <tr><td>制砂（四级）</td><td>3-15mm</td><td>0-5mm</td><td>VSI制砂机 / 5X制砂机</td><td>成品砂石料</td></tr>
+      </tbody></table>
+    </div>
+    <div class="guide-section">
+      <h4>二、按物料硬度选 ⚠️ 最关键</h4>
+      <div class="guide-cards">
+        <div class="guide-card"><h5>🪨 软岩（石灰石、白云岩、石膏）</h5><p>推荐：反击破<br>优势：破碎比大、粒型好、价格低<br>注意：板锤磨损快，不适合硬岩<br>经典配置：PE颚破+PF/PFW反击破</p></div>
+        <div class="guide-card orange"><h5>⛰️ 中硬岩（玄武岩、河卵石）</h5><p>推荐：圆锥破<br>优势：层压破碎、耐磨件寿命长<br>注意：河卵石含硅高，选耐磨腔型<br>经典配置：PE颚破+HST/HPT圆锥破</p></div>
+        <div class="guide-card red"><h5>💎 硬岩（花岗岩、铁矿石、石英岩）</h5><p>推荐：必须用圆锥破<br>注意：反击破打花岗岩纯属烧钱！<br>板锤一天换一套<br>经典配置：PE颚破+HST单缸+HPT多缸</p></div>
+        <div class="guide-card purple"><h5>🏗️ 超高硬度（河卵石制砂）</h5><p>推荐：颚破+圆锥破+制砂机<br>必须三级以上破碎，粒型才够好<br>经典配置：PE颚破+HPT300+VSI-9526</p></div>
+      </div>
+    </div>
+    <div class="guide-section">
+      <h4>三、按产量规模选</h4>
+      <table class="guide-table"><thead><tr><th>产量需求</th><th>推荐粗碎</th><th>推荐中细碎</th><th>适用场景</th></tr></thead><tbody>
+        <tr><td>50-100 t/h</td><td>PE-500×750</td><td>PF-1010 / HPT100</td><td>小型砂石场、个体户</td></tr>
+        <tr><td>100-300 t/h</td><td>PE-750×1060 ⭐</td><td>PF-1315 / HPT300</td><td>中型生产线（热门二手型号）</td></tr>
+        <tr><td>300-600 t/h</td><td>PE-900×1200</td><td>HPT400 / HST315</td><td>大型矿山、商混站配套</td></tr>
+        <tr><td>600-1000 t/h</td><td>PE-1200×1500</td><td>HPT500 + HPT400×2</td><td>超大型矿山项目</td></tr>
+      </tbody></table>
+    </div>
+    <div class="guide-section">
+      <h4>四、常见误区 & 避坑要点</h4>
+      <div class="guide-cards">
+        <div class="guide-card red"><h5>❌ "花岗岩用反击破，便宜"</h5><p>便宜买来贵着用——板锤一天一套，综合成本远高于圆锥破。硬岩必须上圆锥！</p></div>
+        <div class="guide-card orange"><h5>❌ "一台圆锥破打到底"</h5><p>单缸中碎+多缸细碎搭配，产量和粒型才能兼顾。单缸处理量大但粒型一般，多缸粒型好但进料要求高。</p></div>
+        <div class="guide-card"><h5>❌ "制砂机随便配"</h5><p>VSI进料必须&lt;50mm，进料大了先细碎处理。5X系列进料要求更严。进料不匹配，成品率骤降。</p></div>
+        <div class="guide-card purple"><h5>❌ "功率越大越好"</h5><p>关键看破碎腔型匹配：粗腔大产量、细腔好粒型。同一型号不同腔型，产量和粒型差异巨大。</p></div>
+      </div>
+    </div>
+    <div class="guide-section" style="margin-bottom:0;">
+      <h4>五、跟客户聊选型时的关键问句</h4>
+      <table class="guide-table"><thead><tr><th>客户说</th><th>素素可以问</th><th>怎么推</th></tr></thead><tbody>
+        <tr><td>"我要产量大"</td><td>一小时大概多少吨？破碎什么石头？</td><td>→ PE-750×1060以上颚破</td></tr>
+        <tr><td>"石头硬不好碎"</td><td>什么石头？花岗岩还是石灰石？</td><td>→ 花岗岩/铁矿石只能上圆锥破</td></tr>
+        <tr><td>"成品要粒型好"</td><td>出料多大？做什么用？</td><td>→ 反击破粒型最好(软岩)，或圆锥+制砂机</td></tr>
+        <tr><td>"预算有限"</td><td>先帮您算需要多大产量，再找性价比高的型号</td><td>→ 好配置不一定贵，配错了一定亏</td></tr>
+        <tr><td>"外贸客户要全套生产线"</td><td>原料硬度？时产？成品规格？</td><td>→ 按硬度+产量+成品三层筛选</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title"><span class="icon">❓</span> 二手设备常见问题 & 避坑要点</span><button class="btn btn-primary btn-sm" id="btn-add-faq">+ 添加</button></div>
+      <div id="faq-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title"><span class="icon">🌍</span> 外贸设备资料索引</span><button class="btn btn-primary btn-sm" id="btn-add-foreign">+ 添加</button></div>
+      <div id="foreign-equip-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION: SCRIPTS -->
+<section class="section" id="section-scripts">
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-header" style="margin-bottom:0;padding-bottom:0;border:none;">
+      <span class="card-title"><span class="icon">💬</span> 销售话术库（国内 + 外贸）</span>
+      <button class="btn btn-primary btn-sm" id="btn-add-script">+ 添加话术</button>
+    </div>
+  </div>
+  <div id="scripts-container"></div>
+</section>
+
+<!-- SECTION: HEALTH -->
+<section class="section" id="section-health">
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="icon">💪</span> 每日运动打卡</span><button class="btn btn-primary btn-sm" id="btn-add-health-checkin">+ 今日打卡</button></div>
+    <div id="health-checkin-list"></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title"><span class="icon">🏃</span> 运动任务记录</span><button class="btn btn-primary btn-sm" id="btn-add-exercise">+ 记录</button></div>
+      <div class="table-wrap"><table><thead><tr><th>日期</th><th>运动项目</th><th>时长</th><th>备注</th><th>操作</th></tr></thead><tbody id="exercise-tbody"></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title"><span class="icon">🛏️</span> 作息 & 身体状态记录</span><button class="btn btn-primary btn-sm" id="btn-add-body">+ 记录</button></div>
+      <div id="body-status-list"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title"><span class="icon">⏰</span> 作息提醒</span></div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div class="health-reminder"><div class="r-label">晨间提醒</div><div class="r-time">07:00</div><div class="r-desc">起床拉伸 · 喝温水</div></div>
+      <div class="health-reminder"><div class="r-label">午间提醒</div><div class="r-time">12:30</div><div class="r-desc">午餐 · 短暂散步</div></div>
+      <div class="health-reminder"><div class="r-label">晚间提醒</div><div class="r-time">22:30</div><div class="r-desc">放下手机 · 准备休息</div></div>
+    </div>
+  </div>
+</section>
+
+  </div><!-- .content -->
+</div><!-- .main -->
+
+<!-- ==================== MODAL ==================== -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-box">
+    <h3 id="modal-title"></h3>
+    <div id="modal-fields"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="modal-cancel">取消</button>
+      <button class="btn btn-primary" id="modal-save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCRIPT ==================== -->
+<script>
+(function(){
+  'use strict';
+
+  // ==================== DATA ====================
+  const STORE = 'susudata_v2';
+  function defaults(){
+    return {
+      vocabulary:[
+        {en:"Crusher",cn:"破碎机",cat:"设备",level:"熟练"},
+        {en:"Jaw Crusher",cn:"颚式破碎机",cat:"设备",level:"熟练"},
+        {en:"Impact Crusher",cn:"反击式破碎机",cat:"设备",level:"了解"},
+        {en:"Cone Crusher",cn:"圆锥破碎机",cat:"设备",level:"了解"},
+        {en:"VSI Crusher",cn:"立轴冲击式破碎机",cat:"设备",level:"学习"},
+        {en:"Vibrating Feeder",cn:"振动给料机",cat:"设备",level:"熟练"},
+        {en:"Apron Feeder",cn:"板式给料机",cat:"设备",level:"学习"},
+        {en:"Vibrating Screen",cn:"振动筛",cat:"设备",level:"熟练"},
+        {en:"Mobile Crushing Plant",cn:"移动破碎站",cat:"设备",level:"学习"},
+        {en:"Belt Conveyor",cn:"皮带输送机",cat:"配套",level:"熟练"},
+        {en:"Sand Washer",cn:"洗砂机",cat:"配套",level:"学习"},
+        {en:"Sand Making Machine",cn:"制砂机",cat:"设备",level:"了解"},
+        {en:"Motor Power",cn:"电机功率",cat:"参数",level:"熟练"},
+        {en:"Capacity",cn:"处理能力",cat:"参数",level:"熟练"},
+        {en:"Feed Size",cn:"进料粒度",cat:"参数",level:"熟练"},
+        {en:"Discharge Size",cn:"出料粒度",cat:"参数",level:"了解"},
+        {en:"Wear Parts",cn:"易损件",cat:"配件",level:"学习"},
+        {en:"Hydraulic System",cn:"液压系统",cat:"系统",level:"学习"},
+        {en:"Second-hand",cn:"二手",cat:"商务",level:"熟练"},
+        {en:"Inquiry / Quotation",cn:"询价 / 报价",cat:"商务",level:"熟练"},
+        {en:"Delivery",cn:"交付 / 发货",cat:"商务",level:"熟练"},
+        {en:"After-sales Service",cn:"售后服务",cat:"商务",level:"学习"},
+        {en:"FOB / CIF Price",cn:"FOB价 / CIF价",cat:"外贸",level:"学习"},
+        {en:"Container Shipping",cn:"集装箱运输",cat:"外贸",level:"学习"}
+      ],
+      phrases:[
+        {en:"We specialize in premium second-hand mining equipment from Liming Heavy Industry.",cn:"我们主营黎明重工精品二手矿山设备。"},
+        {en:"All our equipment has been inspected and is in excellent working condition.",cn:"所有设备均经过检测，工作状态良好。"},
+        {en:"Would you like to schedule a video inspection of the equipment?",cn:"您想预约设备视频验货吗？"},
+        {en:"Please find the quotation attached.",cn:"请查收附件报价单。"},
+        {en:"What is your required capacity (tons per hour)?",cn:"您需要的处理能力是多少（吨/小时）？"},
+        {en:"We can arrange shipment to your nearest port.",cn:"我们可以安排发货到您最近的港口。"}
+      ],
+      englishCheckins:[],
+      reviewWords:[],
+      dailyPhrases:[
+        {scene:"寒暄问候",en:"Hi! How are you doing today?",cn:"嗨！今天怎么样？"},
+        {scene:"寒暄问候",en:"Good morning! Hope you're having a great day.",cn:"早上好！希望你今天过得愉快。"},
+        {scene:"寒暄问候",en:"Long time no talk! How's everything going?",cn:"好久没聊了！一切都还好吗？"},
+        {scene:"寒暄问候",en:"Nice to meet you! I'm Susu from Zhengzhou, China.",cn:"很高兴认识你！我是素素，来自中国郑州。"},
+        {scene:"自我介绍",en:"I run a second-hand mining equipment business in Zhengzhou.",cn:"我在郑州经营二手矿山设备生意。"},
+        {scene:"自我介绍",en:"We have our own equipment yard — you're welcome to visit anytime!",cn:"我们有自有设备堆场，随时欢迎来参观！"},
+        {scene:"闲聊话题",en:"How's the weather over there? It's been really hot here in Zhengzhou.",cn:"你那边天气怎么样？郑州这边最近特别热。"},
+        {scene:"闲聊话题",en:"Have you been to China before? Zhengzhou is a great city with amazing food.",cn:"你来过中国吗？郑州是个很棒的城市，美食特别多。"},
+        {scene:"闲聊话题",en:"What kind of projects are you working on these days?",cn:"你最近在做什么项目？"},
+        {scene:"闲聊话题",en:"Do you also deal with other types of machinery?",cn:"你还做其他类型的机械设备吗？"},
+        {scene:"WhatsApp日常",en:"No rush, take your time to think about it.",cn:"不着急，你慢慢考虑。"},
+        {scene:"WhatsApp日常",en:"I'll send you some photos and videos tomorrow.",cn:"我明天给你发些照片和视频。"},
+        {scene:"WhatsApp日常",en:"Let me know if you have any questions — happy to help!",cn:"有任何问题随时问我，很乐意帮忙！"},
+        {scene:"WhatsApp日常",en:"Sorry for the late reply — was out visiting the equipment yard.",cn:"抱歉回复晚了，刚去设备场地了。"},
+        {scene:"WhatsApp日常",en:"Sounds good! Let's keep in touch.",cn:"好的！保持联系。"},
+        {scene:"WhatsApp日常",en:"I just shared some new equipment videos — check them out when you have time.",cn:"我刚发了一些新设备视频，有空看看。"},
+        {scene:"WhatsApp日常",en:"Safe travels! Talk to you soon.",cn:"一路平安！回头聊。"},
+        {scene:"WhatsApp日常",en:"My WhatsApp is always open if you need anything.",cn:"我WhatsApp一直在线，有事随时找我。"}
+      ],
+      customers:[],
+      followLogs:[],
+      equipmentArchive:[
+        {name:"C6X颚式破碎机",model:"C6X100",cat:"粗碎·颚破",spec:"进料630mm·出料70-175mm·130-420t/h·110kW",config:"可拆分机架·弹性减震·一体化电机座",pros:"新一代高能效·破碎效率高·安装维护方便",notes:"世邦·黎明旗舰粗碎设备"},
+        {name:"C6X颚式破碎机",model:"C6X125",cat:"粗碎·颚破",spec:"进料800mm·出料100-250mm·230-760t/h·160kW",config:"可拆分机架·高效腔型·一体化设计",pros:"重型结构·超大产量·连续高强度工作",notes:"大型矿山首选粗碎型号"},
+        {name:"C6X颚式破碎机",model:"C6X160",cat:"粗碎·颚破",spec:"进料1020mm·出料150-300mm·410-1150t/h·250kW",config:"重型机架·高精度偏心轴·耐磨颚板",pros:"超大产能·适合大型矿山·稳定可靠",notes:"世邦·黎明最大颚破之一"},
+        {name:"PE颚式破碎机",model:"PE-600×900",cat:"粗碎·颚破",spec:"进料500mm·出料65-160mm·90-180t/h·55-75kW",config:"颚板·飞轮·机架·肘板·弹簧",pros:"经典款·结构简单·维修方便·适合硬岩",notes:"二手市场最常见型号·适配中小型生产线"},
+        {name:"PE颚式破碎机",model:"PE-750×1060 ⭐",cat:"粗碎·颚破",spec:"进料630mm·出料80-140mm·130-260t/h·90-110kW",config:"颚板·飞轮·机架·肘板·弹簧·拉杆",pros:"性价比高·产量适中·配件通用性强",notes:"二手市场最热门型号·国内外需求旺盛"},
+        {name:"PE颚式破碎机",model:"PE-900×1200",cat:"粗碎·颚破",spec:"进料750mm·出料95-200mm·220-380t/h·132kW",config:"增强型机架·大型偏心轴·耐磨颚板",pros:"产量大·适合中大型生产线·运行稳定",notes:"大型矿山标配·外贸热门型号"},
+        {name:"PE颚式破碎机",model:"PE-1200×1500",cat:"粗碎·颚破",spec:"进料1020mm·出料150-300mm·460-900t/h·200kW",config:"超重型机架·大型飞轮·加强颚板",pros:"超大型产能·适合特大型矿山",notes:"重量100.9t·运输安装需注意"},
+        {name:"HST单缸圆锥破",model:"HST160 S1",cat:"中细碎·圆锥",spec:"进料360mm·排料≥25mm·120-345t/h·132kW",config:"液压润滑一体化·正压防尘·多腔型",pros:"破碎效率高·运行成本低·全自动控制",notes:"中碎用S腔·细碎用H腔·二手市场热门"},
+        {name:"HST单缸圆锥破",model:"HST250 S1",cat:"中细碎·圆锥",spec:"进料450mm·排料≥35mm·255-605t/h·220kW",config:"单缸液压·多腔型可选·PLC智能控制",pros:"中硬以上岩石·处理量大·粒型可控",notes:"适配中大型生产线·与HPT搭配效果好"},
+        {name:"HST单缸圆锥破",model:"HST315 S1",cat:"���细碎·圆锥",spec:"进料560mm·排料≥41mm·335-1050t/h·315kW",config:"大型单缸液压·正压防尘·智能监控",pros:"超大产能·硬岩中碎首选·能耗比优",notes:"大型矿山/商混站核心设备"},
+        {name:"HPT多缸圆锥破",model:"HPT300 C1 ⭐",cat:"中细碎·圆锥",spec:"进料230mm·排料≥25mm·220-440t/h·250kW",config:"层压破碎·液压马达调排料·一体润滑",pros:"粒型立方体·细粒级含量高·磨损低",notes:"细碎整形效果好·二手市场最热门型号之一"},
+        {name:"HPT多缸圆锥破",model:"HPT400 C1",cat:"中细碎·圆锥",spec:"进料295mm·排料≥30mm·300-630t/h·315kW",config:"多缸液压·智能控制系统·保险缸+蓄能器",pros:"产量大·粒型好·过载保护可靠",notes:"中大型细碎/整形·二手市场认可度高"},
+        {name:"HPT多缸圆锥破",model:"HPT500 C1",cat:"中细碎·圆锥",spec:"进料330mm·排料≥38mm·425-790t/h·400kW",config:"大型多缸·全自动控制·远程调节排料口",pros:"超大型产能·细碎粒型好·智能运行",notes:"大型矿山旗舰级细碎设备"},
+        {name:"CI5X反击式破碎机",model:"CI5X1315",cat:"中碎·反击破",spec:"进料600mm·145-350t/h·250-315kW",config:"大转动惯量转子·液压调节·渐开线腔型",pros:"科研成果整合·破碎比大·维护方便",notes:"软岩中细碎旗舰·需配颚破粗碎"},
+        {name:"CI5X反击式破碎机",model:"CI5X1520",cat:"中碎·反击破",spec:"进料400mm·335-760t/h·400-500kW",config:"全液压操作·高精度重型转子·耐磨衬板",pros:"超大产能·适合石灰石等软岩",notes:"大型石灰石生产线核心中碎设备"},
+        {name:"PFW欧版反击破",model:"PFW1214III",cat:"中碎·反击破",spec:"进料250mm·90-170t/h·132kW·三腔型",config:"重型转子·液压开顶·弹簧保险·三腔破碎",pros:"欧版技术·细碎粒型好·维护方便",notes:"适合软岩中细碎·配件通用性好"},
+        {name:"PFW欧版反击破",model:"PFW1315III",cat:"中碎·反击破",spec:"进料300mm·180-270t/h·200kW·三腔型",config:"整体铸钢轴承座·液压调节排料口",pros:"产量高·适合中型石灰石生产线",notes:"二手市场常见·性价比高"},
+        {name:"PF系列反击破",model:"PF-1214",cat:"中碎·反击破",spec:"进料350mm·80-160t/h·132kW",config:"板锤·反击板·转子·机架·启顶装置",pros:"价格实惠·破碎比大·出料粒形好",notes:"经典款·只适合软岩(石灰石等)·注意板锤磨损"},
+        {name:"PF系列反击破",model:"PF-1315",cat:"中碎·反击破",spec:"进料350mm·120-260t/h·200kW",config:"重型转子·大型板锤·耐磨反击板·启顶装置",pros:"产量大·粒型好·适合建筑骨料",notes:"二手市场常见·软岩首选·不可打花岗岩"},
+        {name:"VSI6X立轴冲击破",model:"VSI6X1040",cat:"制砂·整形",spec:"进料≤40mm·制砂264-283t/h·整形317-495t/h·200×2kW",config:"四口叶轮·石打石/石打铁双模式·轴承筒",pros:"出料品质高·粒型圆润·级配好·磨损低",notes:"新一代旗舰制砂机·二手市场新宠"},
+        {name:"VSI6X立轴冲击破",model:"VSI6X1263",cat:"制砂·整形",spec:"进料≤50mm·制砂454-486t/h·整形545-849t/h·315×2kW",config:"大型四口叶轮·液压起顶·特殊密封结构",pros:"超大产能·适合大型机制砂生产线",notes:"大型矿山·商混站制砂核心设备"},
+        {name:"VSI5X高效冲击破",model:"VSI5X9532",cat:"制砂·整形",spec:"进料≤45mm·制砂180-280t/h·整形350-540t/h·160×2kW",config:"德国技术·三破碎模式·液压起顶·轻油密封",pros:"技术成熟·粒形优良·运行成本低",notes:"二手市场最多的制砂机型号"},
+        {name:"VSI5X高效冲击破",model:"VSI5X1145",cat:"制砂·整形",spec:"进料≤50mm·制砂250-360t/h·整形500-640t/h·220×2kW",config:"大型转子·三模式破碎·液压系统·耐磨件",pros:"大产量·建设用砂首选·成品级配好",notes:"适配中大型生产线制砂需求"},
+        {name:"S5X圆振动筛",model:"S5X2160-3",cat:"筛分设备",spec:"筛面2100×6000mm·3层·75-600t/h·30kW",config:"SV模块化激振器·挠性传动·橡胶衬板",pros:"筛分效率高·处理量大·抗疲劳性强",notes:"与PE750+HPT300生产线经典搭配"},
+        {name:"S5X圆振动筛",model:"S5X2460-3",cat:"筛分设备",spec:"筛面2400×6000mm·3层·100-800t/h·30kW",config:"有限元动态分析框架·高振动强度·高强螺栓",pros:"高产高效·低成本运行·耐用性好",notes:"大型生产线筛分配套"},
+        {name:"F5X振动给料机",model:"F5X1345(M)",cat:"给料设备",spec:"料槽1300×4500mm·最大进料900mm·600t/h·22kW",config:"超重型槽体·转轴式电机减震器·棒条配置",pros:"给料均匀·高振动强度·大处理量",notes:"模块化设计·维护方便"},
+        {name:"NK轮胎移动站(颚破)",model:"NK75J",cat:"移动破碎",spec:"给料FK0936·PE750×1060·B1000×9m·最大进料630mm",config:"模块化·车载一体化PLC控制·支腿固定",pros:"免基础安装·快速转场·运输方便",notes:"二手市场热门移动站·灵活配置"},
+        {name:"NK轮胎移动站(圆锥)",model:"NK300HS",cat:"移动破碎",spec:"筛分SKX1536·HPT300·B1000×8.4m·最大进料180mm",config:"车载一体化·西门子PLC·一键启停",pros:"即装即用·转场快速·自动化生产",notes:"搭配颚破移动站组成移动生产线"},
+        {name:"XSD轮式洗砂机",model:"XSD3016",cat:"洗砂设备",spec:"叶轮φ3000×1600mm·进料≤10mm·70-120t/h·15kW",config:"轮斗结构·电机减速机驱动·水隔离传动",pros:"洗砂效率高·处理量大·功耗低·维护简单",notes:"湿法制砂标配·去除泥粉杂质"},
+        {name:"VU骨料优化系统",model:"VU300",cat:"干法制砂系统",spec:"入料0-25mm·240-300t/h·石粉含量3-15%可调·1990kW",config:"塔楼式全封闭·制砂+粒型优化+石粉控制+级配调整",pros:"成品媲美天然砂·环保指标出色·自动化高",notes:"大型干法制砂·绿色矿山首选系统"}
+      ],
+      inventory:[
+        {name:"PEW860 欧版颚式破碎机",model:"PEW860",qty:1,state:"在库",condition:"9成新",location:"上街区堆场A区"},
+        {name:"HPT300C2 多缸液压圆锥破",model:"HPT300C2",qty:1,state:"在库",condition:"8成新",location:"上街区堆场A区"},
+        {name:"VSI6X1150 立轴冲击破",model:"VSI6X1150",qty:1,state:"在库",condition:"8成新",location:"上街区堆场B区"},
+        {name:"VSI6X1263 立轴冲击破(1号)",model:"VSI6X1263",qty:1,state:"在库",condition:"8成新",location:"上街区堆场B区"},
+        {name:"VSI6X1263 立轴冲击破(2号)",model:"VSI6X1263",qty:1,state:"在库",condition:"8成新",location:"上街区堆场B区"},
+        {name:"VS16X1150 立轴冲击破",model:"VS16X1150",qty:1,state:"在库",condition:"9成新",location:"上街区堆场B区"},
+        {name:"S5X2760-3 三层振动筛",model:"S5X2760-3",qty:1,state:"在库",condition:"8成新",location:"上街区堆场C区"},
+        {name:"S5X3075-3T 三层振动筛",model:"S5X3075-3T",qty:1,state:"在库",condition:"8成新",location:"上街区堆场C区"},
+        {name:"F5X1360 振动给料机",model:"F5X1360",qty:1,state:"在库",condition:"8成新",location:"上街区堆场D区"}
+      ],
+      faq:[
+        {q:"二手破碎机买回来要注意什么？",a:"1.核查设备运行时数 2.检查关键磨损件（颚板、板锤、衬板）3.试机听异响 4.查看保养记录 5.液压系统是否漏油"},
+        {q:"设备到海外怎么运输？",a:"通常采用集装箱或散货船运输。先拆解大型部件，做好防锈处理，提供装箱单和唛头。建议CIF条款，含海运保险。"},
+        {q:"客户担心二手设备质量问题怎么办？",a:"提供试机视频、运行参数记录、磨损件照片。邀请来场地或视频连线实时验机。可签质量保证协议。"}
+      ],
+      foreignEquipNotes:[],
+            scripts:[
+        {cat:"抖音私信开场",text:"老板您好，我是赵素，河南做矿山设备资源的。看了您的视频，感觉您对设备很专业。想认识一下，您现在主要做石料还是机制砂？"},
+        {cat:"抖音私信开场",text:"老板您好，我赵素，郑州上街区自有设备堆场。抖音上发的二手鄂破/反击破现场实拍，不是效果图。您想了解哪类设备，我发原视频给您看细节。"},
+        {cat:"抖音私信开场",text:"老板好！我看您关注矿山设备挺久。我不发广告，就发几张判断二手设备成色的细节图——机架、轴承、衬板怎么看。您留着参考，买不买我的无所谓。"},
+        {cat:"抖音私信开场",text:"老板您好，我是赵素。我这边有几十台黎明重工二手设备现货：鄂破、反击破、圆锥破、制砂机都有。您是整线改造还是单机替换？我按您现场给您发案例。"},
+        {cat:"询价应对",text:"老板，价格我能报，但先确认三个点：您进料最大多大？电机需不需要配？设备基础能不能改？方案定好了，价格才有意义。"},
+        {cat:"询价应对",text:"老板，报价表我先不发。您先把石料硬度、时产要求、用电情况告诉我，我给您理一个方案。没有方案的价格没有意义，乱报价对您也不负责。"},
+        {cat:"询价应对",text:"这款设备我给您报实在价X万。不过这只是基础裸机价，含电机、含试机、含基础配件包。您要是不带电机，价格还能往下调。"},
+        {cat:"询价应对",text:"时产不是固定值，取决于进料尺寸、物料硬度和出料粒度。您给我这三个参数，我给您一个产量区间，再按区间报对应的价格。"},
+        {cat:"压价应对",text:"老板，二手设备一分钱一分货。便宜的可能是翻新喷漆、换过核心件、不能试机。我这台能现场看机架、听轴承声音、看出料，成色摆在那里。您把对方配置发我，我帮您看差在哪里。"},
+        {cat:"压价应对",text:"贵不贵要看成色、配置和能不能少停机。二手设备便宜的很多，但买回去先修就不便宜了。您算一笔账：停机一天少出多少吨料？我这台回去三天就能转起来。"},
+        {cat:"压价应对",text:"正常，每台二手设备成色不一样。您把对方的具体配置和照片发我，我帮您对比。不一定非要买我的，但设备选错了后期更贵。"},
+        {cat:"压价应对",text:"能谈的我一定谈，但我不建议为了省几千块把成色和售后砍掉。我这台包三个月质保、易损件清单和安装指导，您买回去不用再花冤枉钱。"},
+        {cat:"邀约看场地",text:"老板，二手设备图片只能看一半。如果您觉得方向对，我建议来上街区场地看一次——现场听轴承声音、看出料，比视频直观十倍。离连霍高速上街出口很近。"},
+        {cat:"邀约看场地",text:"哥，周末有空吗？来上街场地看看实物。我带你过一遍设备，重点看机架有无开焊、衬板磨损程度、试机出料效果。到了请你吃饭，顺便聊聊您现场！"},
+        {cat:"邀约看场地",text:"老板，设备在郑州上街区我们自有堆场。您随时可以来看，我带您重点看轴承温度、机架状态、电机是否原装。看不中就当交个朋友，矿山圈子就这么大。"},
+        {cat:"客户犹豫",text:"应该考虑，设备不能冲动。您考虑时重点看三件事：物料适不适合、产量能不能满足、后期维护方不方便。不要只看主机价格，停机成本和配件才是大头。"},
+        {cat:"客户犹豫",text:"没关系的，您可以多对比几家。我把这台设备的细节图、试机视频和同物料现场案例发给您，您慢慢看。有具体型号或预算要求随时跟我说，我帮您盯着。"},
+        {cat:"客户犹豫",text:"理解，矿山设备不是小投入。您先把方案方向定下来——老线改造还是新上整线？不同方向配置差别很大。有方向了咱们再聊具体型号，不着急。"},
+        {cat:"客户犹豫",text:"老板，设备这个事不能冲动。我先不催您成交，把适合和不适合的地方都说清楚。合适咱们再谈，不合适您也别花冤枉钱。"},
+        {cat:"客户犹豫",text:"没事老板。这台设备我不说完美，但按您替换需求，成色、交期和价格比较平衡。如果您要，我帮您锁一下，避免被别人定走。不定也没关系，保持联系。"},
+        {cat:"外贸沟通",text:"Hello, I am Zhao Su from Henan, China. We focus on mining crushing equipment — good-condition used machines from Liming Heavy Industry, plus complete production lines. May I first confirm your material, capacity (tph), and output size?"},
+        {cat:"外贸沟通",text:"Before quoting, I need four details: material type, max feed size, required capacity per hour, and final output sizes. Once confirmed, I will send machine photos, running videos, technical parameters, and a preliminary quotation."},
+        {cat:"外贸沟通",text:"Hi, here is the running video. Please check the sound, bearing position, liner wear, and discharge material. If the specs match your project, I can prepare a formal quotation with loading plan and spare parts list."},
+        {cat:"外贸沟通",text:"For used equipment, price is not the only factor. We inspect: frame condition, main shaft, bearings, wear parts, motor, and test running before shipment. I will send you comparison details so you can see the difference."},
+        {cat:"外贸沟通",text:"Customer: Price? → Zhao Su: I can quote, but I need to avoid recommending the wrong machine. What material are you crushing and what capacity do you need? (Limestone 100tph → Impact crusher; Granite → Cone crusher)"},
+        {cat:"外贸沟通",text:"Hi, just confirming — does this model match your project? If your capacity or material is different, I can recommend another option. No rush, I want to make sure we match correctly."},
+        {cat:"常见问题",text:"设备都在郑州上街区自有堆场，离连霍高速上街出口很近。欢迎随时来看，我带你现场试机，重点看出料、听轴承声音、检查衬板磨损。"},
+        {cat:"常见问题",text:"二手设备看五个位置：机架有没有开焊、轴承试机声音干不干净、衬板磨损程度、电机是否原装、有没有大修记录。我每台都给你拍细节。"},
+        {cat:"常见问题",text:"整线方案怎么做？先定物料和产量目标→再倒推每段设备处理能力：给料→粗破→筛分→中细破→筛分→制砂→洗砂，环环匹配。我帮您出流程图。"},
+        {cat:"常见问题",text:"设备出厂年份：___年 | 运行时长：约___h | 功率：___kW | 产量：___t/h | 质保：3个月 | 含：电机/易损件清单/安装指导/远程视频支持"},
+        {cat:"常见问题",text:"售后：常规易损件、安装指导、远程视频支持。质保期内非人为故障我负责协调处理。前期备件包配齐，后期少很多麻烦。"},
+        {cat:"常见问题",text:"运输：大件设备拆分装车，提前出装柜方案。物流我帮您协调，运费实报实销。国内常用专线物流，外贸走青岛/天津港。"},
+        {cat:"常见问题",text:"配件好不好买？黎明重工、上海世邦等主流品牌配件通用性好，市面上好找。冷门品牌设备可能便宜，但后期配件是麻烦。买设备要看长期。"},
+        {cat:"常见问题",text:"反击破和圆锥破哪个好？没有哪个更好，看物料：石灰石用反击破粒型好成本低；花岗岩必须上圆锥，否则耐磨件扛不住。您是什么料？我帮您判断。"}
+      ],      healthCheckins:[],
+      exerciseRecords:[],
+      bodyRecords:[],
+      calYear:new Date().getFullYear(),
+      calMonth:new Date().getMonth(),
+      dataVersion:4
+    };
+  }
+
+  function load(){ try{ var r=localStorage.getItem(STORE); if(r) return JSON.parse(r); }catch(e){} return defaults(); }
+  function save(){ try{ localStorage.setItem(STORE, JSON.stringify(D)); }catch(e){} }
+  var D = load();
+  // Data upgrade: if version is outdated, refresh scripts & equipment from defaults
+  var _def = defaults();
+  if (!D.dataVersion || D.dataVersion < _def.dataVersion) {
+    D.scripts = _def.scripts;
+    D.equipmentArchive = _def.equipmentArchive;
+    D.dailyPhrases = _def.dailyPhrases;
+    D.inventory = _def.inventory;
+    D.dataVersion = _def.dataVersion;
+    save();
+  }
+  if(!localStorage.getItem(STORE)) save();
+
+  // ==================== EXPORT / IMPORT ====================
+  function exportData(){
+    var blob = new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '素素工作台备份_' + todayStr() + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  function importData(){
+    var inp = document.createElement('input');
+    inp.type='file';inp.accept='.json';
+    inp.onchange=function(){
+      var fr=new FileReader();
+      fr.onload=function(){
+        try{
+          var imported=JSON.parse(fr.result);
+          if(!imported.customers && !imported.scripts && !imported.healthCheckins){
+            alert('文件格式不对，请选择工作台备份文件');return;
+          }
+          if(!confirm('导入会覆盖当前所有数据（客户、打卡、日志等）。确定继续？')) return;
+          // Merge: keep defaults for fixed data, overwrite user data
+          D.customers = imported.customers || [];
+          D.followLogs = imported.followLogs || [];
+          D.followTodos = imported.followTodos || [];
+          D.calEvents = imported.calEvents || [];
+          D.vocab = imported.vocab || _def.vocab;
+          D.phrases = imported.phrases || _def.phrases;
+          D.dailyPhrases = imported.dailyPhrases || _def.dailyPhrases;
+          D.englishCheckins = imported.englishCheckins || [];
+          D.reviewWords = imported.reviewWords || [];
+          D.healthCheckins = imported.healthCheckins || [];
+          D.exerciseRecords = imported.exerciseRecords || [];
+          D.bodyRecords = imported.bodyRecords || [];
+          D.inventory = imported.inventory || _def.inventory;
+          D.equipmentArchive = imported.equipmentArchive || _def.equipmentArchive;
+          D.scripts = imported.scripts || _def.scripts;
+          D.faq = imported.faq || _def.faq;
+          D.foreignEquipNotes = imported.foreignEquipNotes || _def.foreignEquipNotes;
+          D.dataVersion = _def.dataVersion;
+          save();renderAll();alert('导入成功！');
+        }catch(e){alert('导入失败：'+e.message);}
+      };
+      fr.readAsText(inp.files[0]);
+    };
+    inp.click();
+  }
+
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+  // ==================== UTILS ====================
+  function statusTag(s){
+    var m={'初步沟通':'tag-blue','邀约看场地':'tag-orange','报价中':'tag-purple','待成交':'tag-green','已成交':'tag-green','搁置':'tag-gray'};
+    return '<span class="tag '+(m[s]||'tag-gray')+'">'+s+'</span>';
+  }
+  function tf(t,max){ if(!t)return'-'; return t.length>max?t.slice(0,max)+'…':t; }
+
+  // ==================== NAVIGATION ====================
+  var navMap={home:'工作台首页',english:'外贸英语学习专区',customers:'客户跟进管理区',equipment:'设备资料库',scripts:'销售话术库',health:'健康锻炼管理区'};
+  document.querySelectorAll('.nav-item').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      var s=btn.dataset.section;
+      // Sync mobile bottom nav
+      document.querySelectorAll('.mob-nav button').forEach(function(b){b.classList.remove('active');});
+      var mobBtn = document.querySelector('.mob-nav button[data-section="'+s+'"]');
+      if(mobBtn) mobBtn.classList.add('active');
+      document.querySelectorAll('.section').forEach(function(sec){sec.classList.remove('active');});
+      document.getElementById('section-'+s).classList.add('active');
+      document.getElementById('topbar-title').textContent=navMap[s];
+      if(s==='customers') renderCalendar();
+      if(s==='home') renderHome();
+    });
+  });
+  document.getElementById('today-date').textContent=new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+
+  // ==================== MODAL ====================
+  function openModal(title,fieldsHTML,onSave){
+    var ov=document.getElementById('modal-overlay');
+    document.getElementById('modal-title').textContent=title;
+    document.getElementById('modal-fields').innerHTML=fieldsHTML;
+    document.getElementById('modal-cancel').onclick=hideModal;
+    document.getElementById('modal-save').onclick=function(){
+      if(onSave()) hideModal();
+    };
+    ov.classList.add('show');
+  }
+
+  function hideModal(){
+    document.getElementById('modal-overlay').classList.remove('show');
+  }
+
+  // Close modal when clicking backdrop
+  document.getElementById('modal-overlay').addEventListener('click',function(e){
+    if(e.target===this) hideModal();
+  });
+
+  function field(name,label,type,options,value){
+    var h='<div class="form-group"><label>'+label+'</label>';
+    if(type==='select'){
+      h+='<select id="mf-'+name+'">';
+      (options||[]).forEach(function(o){ h+='<option value="'+o+'"'+(value===o?' selected':'')+'>'+o+'</option>'; });
+      h+='</select>';
+    }else if(type==='textarea'){
+      h+='<textarea id="mf-'+name+'" rows="3">'+(value||'')+'</textarea>';
+    }else{
+      h+='<input id="mf-'+name+'" type="'+(type||'text')+'" value="'+(value||'')+'">';
+    }
+    h+='</div>';
+    return h;
+  }
+
+  function fieldCb(name,text,checked){
+    return '<div class="form-group"><label><input type="checkbox" id="mf-'+name+'" '+(checked?'checked':'')+' style="width:auto;margin-right:6px;">'+text+'</label></div>';
+  }
+
+  function getVal(name){
+    var el=document.getElementById('mf-'+name);
+    if(!el) return '';
+    if(el.type==='checkbox') return el.checked;
+    return el.value;
+  }
+
+  // ==================== HOME ====================
+  function renderHome(){
+    document.getElementById('stat-customers').textContent=D.customers.filter(function(c){return c.status!=='已成交'&&c.status!=='搁置';}).length;
+    document.getElementById('stat-vocab').textContent=D.vocabulary.length;
+    document.getElementById('stat-devices').textContent=D.inventory.length;
+    var td=todayStr(), d2=new Date(), streak=0;
+    while(true){
+      var ds=d2.toISOString().slice(0,10);
+      if(D.healthCheckins.some(function(c){return c.date===ds&&c.done;})){streak++;d2.setDate(d2.getDate()-1);}
+      else break;
+    }
+    document.getElementById('stat-exercise').textContent=streak;
+
+    var active=D.customers.filter(function(c){return c.status!=='已成交'&&c.status!=='搁置';});
+    var rc=document.getElementById('home-recent-customers');
+    if(active.length===0) rc.innerHTML='<div class="empty-state">暂无待跟进客户</div>';
+    else rc.innerHTML=active.slice(0,5).map(function(c){
+      return '<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;"><div><strong style="font-size:13px;">'+c.name+'</strong> <span style="color:var(--text3);font-size:12px;">· '+tf(c.intent,20)+'</span></div>'+statusTag(c.status)+'</div>';
+    }).join('');
+
+    var todos=D.customers.filter(function(c){return c.nextVisit===td&&c.status!=='已成交';});
+    var tdDiv=document.getElementById('home-todos');
+    if(todos.length===0) tdDiv.innerHTML='<div class="empty-state" style="padding:20px;">今日无待办事项 ✅</div>';
+    else tdDiv.innerHTML=todos.map(function(c){
+      return '<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:8px;"><span style="font-size:14px;">📞</span><span style="font-size:13px;">回访 <strong>'+c.name+'</strong> — '+tf(c.intent,20)+'</span></div>';
+    }).join('');
+
+    document.getElementById('customer-badge').textContent=active.length;
+  }
+
+  // ==================== ENGLISH ====================
+  function renderVocab(){
+    document.getElementById('vocab-tbody').innerHTML=D.vocabulary.map(function(v,i){
+      var lvl=v.level==='熟练'?'tag-green':v.level==='了解'?'tag-orange':'tag-gray';
+      return '<tr><td><strong>'+v.en+'</strong></td><td>'+v.cn+'</td><td><span class="tag tag-blue">'+v.cat+'</span></td><td><span class="tag '+lvl+'">'+v.level+'</span></td><td class="table-actions"><button class="btn btn-outline btn-sm" data-edit="vocab" data-i="'+i+'">编辑</button><button class="btn btn-danger btn-sm" data-del="vocab" data-i="'+i+'">删除</button></td></tr>';
+    }).join('');
+  }
+
+  function openVocabForm(idx){
+    var isEdit=idx!==undefined, v=isEdit?D.vocabulary[idx]:{en:'',cn:'',cat:'设备',level:'熟练'};
+    var h=field('en','英文','text',null,v.en)+field('cn','中文','text',null,v.cn)+field('cat','分类','select',['设备','配套','参数','配件','系统','商务','外贸'],v.cat)+field('level','熟练度','select',['熟练','了解','学习'],v.level);
+    openModal(isEdit?'编辑单词':'添加单词',h,function(){
+      var d={en:getVal('en'),cn:getVal('cn'),cat:getVal('cat'),level:getVal('level')};
+      if(!d.en||!d.cn){alert('请填写英文和中文');return false;}
+      if(isEdit) D.vocabulary[idx]=d; else D.vocabulary.push(d);
+      save();renderVocab();renderHome();return true;
+    });
+  }
+
+  function deleteVocab(i){ if(confirm('确定删除该单词？')){D.vocabulary.splice(i,1);save();renderVocab();renderHome();} }
+
+  function renderPhrases(){
+    document.getElementById('phrases-list').innerHTML=D.phrases.map(function(p,i){
+      return '<div class="vocab-card"><div><div class="vocab-en">'+p.en+'</div><div class="vocab-cn">'+p.cn+'</div></div><button class="btn btn-danger btn-sm" data-del="phrase" data-i="'+i+'">删除</button></div>';
+    }).join('');
+  }
+
+  function openPhraseForm(){
+    openModal('添加常用句子',field('en','英文句子','textarea')+field('cn','中文翻译','text'),function(){
+      var d={en:getVal('en'),cn:getVal('cn')};
+      if(!d.en||!d.cn){alert('请填写完整');return false;}
+      D.phrases.push(d);save();renderPhrases();return true;
+    });
+  }
+
+  function renderEnglishCheckins(){
+    var div=document.getElementById('english-checkin-list');
+    D.englishCheckins.sort(function(a,b){return b.date.localeCompare(a.date);});
+    if(D.englishCheckins.length===0){div.innerHTML='<div class="empty-state">还没有学习打卡记录</div>';return;}
+    div.innerHTML=D.englishCheckins.map(function(c,i){
+      return '<div class="checkin-row"><span class="checkin-date">'+c.date+'</span><span class="checkin-content">'+(c.content||'今日已学习')+'</span><span class="checkin-status">'+(c.done?'<span class="tag tag-green">✓ 完成</span>':'<span class="tag tag-red">未完成</span>')+'</span><input type="checkbox" class="checkin-check" '+(c.done?'checked':'')+' data-toggle="engcheckin" data-i="'+i+'"><button class="btn btn-danger btn-sm" data-del="engcheckin" data-i="'+i+'">×</button></div>';
+    }).join('');
+  }
+
+  function openEngCheckinForm(){
+    var td=todayStr();
+    openModal('学习打卡',field('date','日期','date',null,td)+field('content','学习内容','textarea')+fieldCb('done','已完成',true),function(){
+      var d={date:getVal('date')||td,content:getVal('content'),done:getVal('done')};
+      D.englishCheckins.unshift(d);save();renderEnglishCheckins();return true;
+    });
+  }
+
+  function renderReviewWords(){
+    document.getElementById('review-tbody').innerHTML=D.reviewWords.map(function(r,i){
+      return '<tr><td><strong>'+r.en+'</strong></td><td>'+r.cn+'</td><td><span class="tag '+(r.count>2?'tag-red':'tag-orange')+'">'+r.count+' 次</span></td><td class="table-actions"><button class="btn btn-outline btn-sm" data-edit="review" data-i="'+i+'">编辑</button><button class="btn btn-danger btn-sm" data-del="review" data-i="'+i+'">删除</button></td></tr>';
+    }).join('');
+  }
+
+  function openReviewForm(idx){
+    var isEdit=idx!==undefined, r=isEdit?D.reviewWords[idx]:{en:'',cn:'',count:1};
+    openModal(isEdit?'编辑单词':'添加不熟单词',field('en','英文','text',null,r.en)+field('cn','中文','text',null,r.cn)+field('count','错误次数','number',null,r.count),function(){
+      var d={en:getVal('en'),cn:getVal('cn'),count:parseInt(getVal('count'))||1};
+      if(!d.en||!d.cn){alert('请填写完整');return false;}
+      if(isEdit) D.reviewWords[idx]=d; else D.reviewWords.push(d);
+      save();renderReviewWords();return true;
+    });
+  }
+
+  // -- Daily Conversation Phrases --
+  function renderDailyPhrases(){
+    var sceneOrder=['寒暄问候','自我介绍','闲聊话题','WhatsApp日常'];
+    var groups={};
+    D.dailyPhrases.forEach(function(p){ if(!groups[p.scene]) groups[p.scene]=[]; groups[p.scene].push(p); });
+    var container=document.getElementById('daily-phrases-container'), html='';
+    sceneOrder.forEach(function(scene){
+      if(!groups[scene]) return;
+      html+='<div style="margin-bottom:14px;"><div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;">📌 '+scene+'</div>';
+      groups[scene].forEach(function(p,gi){
+        var realIdx=D.dailyPhrases.indexOf(p);
+        html+='<div class="script-item" style="border-left-color:var(--purple);"><div class="script-text"><div style="font-weight:600;margin-bottom:2px;">'+p.en+'</div><div style="font-size:12px;color:var(--text2);">'+p.cn+'</div></div><div class="table-actions" style="flex-shrink:0;margin-left:8px;"><button class="btn btn-danger btn-sm" data-del="dailyphrase" data-i="'+realIdx+'">删除</button></div></div>';
+      });
+      html+='</div>';
+    });
+    container.innerHTML=html||'<div class="empty-state">还没有日常口语，点击右上角添加</div>';
+  }
+
+  function openDailyPhraseForm(){
+    openModal('添加日常口语',field('scene','场景','select',['寒暄问候','自我介绍','闲聊话题','WhatsApp日常'])+field('en','英文句子','textarea')+field('cn','中文翻译','text'),function(){
+      var d={scene:getVal('scene'),en:getVal('en'),cn:getVal('cn')};
+      if(!d.en||!d.cn){alert('请填写完整');return false;}
+      D.dailyPhrases.push(d);save();renderDailyPhrases();return true;
+    });
+  }
+
+  // ==================== CUSTOMERS ====================
+  function renderCustomers(){
+    document.getElementById('customers-tbody').innerHTML=D.customers.map(function(c,i){
+      return '<tr><td><strong>'+c.name+'</strong></td><td><span class="tag tag-blue">'+c.source+'</span></td><td>'+tf(c.intent,20)+'</td><td>'+tf(c.needs,20)+'</td><td>'+(c.budget||'-')+'</td><td>'+statusTag(c.status)+'</td><td>'+(c.nextVisit||'-')+'</td><td class="table-actions"><button class="btn btn-outline btn-sm" data-edit="customer" data-i="'+i+'">编辑</button><button class="btn btn-danger btn-sm" data-del="customer" data-i="'+i+'">删除</button></td></tr>';
+    }).join('');
+    document.getElementById('customer-badge').textContent=D.customers.filter(function(c){return c.status!=='已成交'&&c.status!=='搁置';}).length;
+  }
+
+  function openCustomerForm(idx){
+    var isEdit=idx!==undefined, c=isEdit?D.customers[idx]:{name:'',source:'抖音',intent:'',needs:'',budget:'',status:'初步沟通',nextVisit:''};
+    var h=field('name','客户姓名','text',null,c.name)+
+      field('source','来源','select',['抖音','视频号','转介绍','其他'],c.source)+
+      field('intent','意向设备','text',null,c.intent)+
+      field('needs','客户需求','textarea',null,c.needs)+
+      field('budget','预算','text',null,c.budget)+
+      field('status','跟进状态','select',['初步沟通','邀约看场地','报价中','待成交','已成交','搁置'],c.status)+
+      field('nextVisit','下次回访日期','date',null,c.nextVisit);
+    openModal(isEdit?'编辑客户':'添加客户',h,function(){
+      var d={name:getVal('name'),source:getVal('source'),intent:getVal('intent'),needs:getVal('needs'),budget:getVal('budget'),status:getVal('status'),nextVisit:getVal('nextVisit')};
+      if(!d.name){alert('请填写客户姓名');return false;}
+      if(isEdit) D.customers[idx]=d; else D.customers.push(d);
+      save();renderCustomers();renderHome();renderCalendar();return true;
+    });
+  }
+
+  function deleteCustomer(i){ if(confirm('确定删除该客户？')){D.customers.splice(i,1);save();renderCustomers();renderHome();renderCalendar();} }
+
+  function renderFollowLogs(){
+    var div=document.getElementById('follow-logs-list');
+    D.followLogs.sort(function(a,b){return b.date.localeCompare(a.date);});
+    if(D.followLogs.length===0){div.innerHTML='<div class="empty-state">暂无跟进记录</div>';return;}
+    div.innerHTML=D.followLogs.map(function(l,i){
+      return '<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;font-size:13px;">'+l.customer+'</span><span style="font-size:11px;color:var(--text3);">'+l.date+'</span></div><div style="font-size:12px;color:var(--text2);margin-top:3px;">'+l.note+'</div><button class="btn btn-danger btn-sm" style="margin-top:4px;" data-del="followlog" data-i="'+i+'">删除</button></div>';
+    }).join('');
+  }
+
+  function openFollowLogForm(){
+    openModal('记录沟通',field('customer','客户姓名','text')+field('date','日期','date',null,todayStr())+field('note','沟通内容','textarea'),function(){
+      var d={customer:getVal('customer'),date:getVal('date')||todayStr(),note:getVal('note')};
+      if(!d.customer){alert('请填写客户姓名');return false;}
+      D.followLogs.unshift(d);save();renderFollowLogs();return true;
+    });
+  }
+
+  function renderCalendar(){
+    var y=D.calYear,m=D.calMonth;
+    document.getElementById('calendar-month').textContent=y+'年'+(m+1)+'月';
+    var fd=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate();
+    var evts={}; D.customers.forEach(function(c){if(c.nextVisit)evts[c.nextVisit]=true;});
+    var td=todayStr(),h='';
+    ['日','一','二','三','四','五','六'].forEach(function(d){h+='<div class="calendar-day-name">'+d+'</div>';});
+    for(var i=0;i<fd;i++) h+='<div class="calendar-day"></div>';
+    for(var d=1;d<=dim;d++){
+      var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      var cls='calendar-day'; if(ds===td)cls+=' today'; if(evts[ds])cls+=' has-event';
+      h+='<div class="'+cls+'">'+d+'</div>';
+    }
+    document.getElementById('calendar-grid').innerHTML=h;
+  }
+
+  // ==================== EQUIPMENT ====================
+  function renderEquipmentArchive(){
+    document.getElementById('equipment-archive-tbody').innerHTML=D.equipmentArchive.map(function(e,i){
+      return '<tr><td><strong>'+e.name+'</strong></td><td>'+e.model+'</td><td><span class="tag tag-blue">'+e.cat+'</span></td><td>'+tf(e.spec,30)+'</td><td>'+tf(e.config,20)+'</td><td>'+tf(e.pros,30)+'</td><td>'+tf(e.notes,20)+'</td><td class="table-actions"><button class="btn btn-outline btn-sm" data-edit="eq-archive" data-i="'+i+'">编辑</button><button class="btn btn-danger btn-sm" data-del="eq-archive" data-i="'+i+'">删除</button></td></tr>';
+    }).join('');
+  }
+
+  function openEquipArchiveForm(idx){
+    var isEdit=idx!==undefined, e=isEdit?D.equipmentArchive[idx]:{name:'',model:'',cat:'破碎设备',spec:'',config:'',pros:'',notes:''};
+    var h=field('name','设备名称','text',null,e.name)+field('model','型号','text',null,e.model)+
+      field('cat','类别','select',['破碎设备','给料设备','筛分设备','制砂设备','移动破碎站','输送设备','其他'],e.cat)+
+      field('spec','主要参数','textarea',null,e.spec)+field('config','配置','textarea',null,e.config)+
+      field('pros','优点','textarea',null,e.pros)+field('notes','注意要点','textarea',null,e.notes);
+    openModal(isEdit?'编辑设备档案':'添加设备档案',h,function(){
+      var d={name:getVal('name'),model:getVal('model'),cat:getVal('cat'),spec:getVal('spec'),config:getVal('config'),pros:getVal('pros'),notes:getVal('notes')};
+      if(!d.name||!d.model){alert('请填写设备名称和型号');return false;}
+      if(isEdit) D.equipmentArchive[idx]=d; else D.equipmentArchive.push(d);
+      save();renderEquipmentArchive();return true;
+    });
+  }
+
+  function renderInventory(){
+    var tbody=document.getElementById('inventory-tbody');
+    if(D.inventory.length===0){tbody.innerHTML='<tr><td colspan="7" class="empty-state">暂无设备，点击右上角添加</td></tr>';return;}
+    tbody.innerHTML=D.inventory.map(function(inv,i){
+      var sc=inv.state==='在库'?'tag-green':inv.state==='已售'?'tag-gray':'tag-orange';
+      return '<tr><td><strong>'+inv.name+'</strong></td><td>'+inv.model+'</td><td>'+inv.qty+'</td><td><span class="tag '+sc+'">'+inv.state+'</span></td><td>'+inv.condition+'</td><td>'+inv.location+'</td><td class="table-actions"><button class="btn btn-outline btn-sm" data-edit="inventory" data-i="'+i+'">编辑</button><button class="btn btn-danger btn-sm" data-del="inventory" data-i="'+i+'">删除</button></td></tr>';
+    }).join('');
+  }
+
+  function openInventoryForm(idx){
+    var isEdit=idx!==undefined, inv=isEdit?D.inventory[idx]:{name:'',model:'',qty:1,state:'在库',condition:'9成新',location:''};
+    var h=field('name','设备名称','text',null,inv.name)+field('model','型号','text',null,inv.model)+field('qty','数量','number',null,inv.qty)+
+      field('state','状态','select',['在库','已售','预订','维修中'],inv.state)+
+      field('condition','成色','select',['9成新','8成新','7成新','6成新'],inv.condition)+
+      field('location','存放位置','text',null,inv.location);
+    openModal(isEdit?'编辑设备':'添加场地设备',h,function(){
+      var d={name:getVal('name'),model:getVal('model'),qty:parseInt(getVal('qty'))||1,state:getVal('state'),condition:getVal('condition'),location:getVal('location')};
+      if(!d.name||!d.model){alert('请填写完整');return false;}
+      if(isEdit) D.inventory[idx]=d; else D.inventory.push(d);
+      save();renderInventory();renderHome();return true;
+    });
+  }
+
+  function renderFAQ(){
+    document.getElementById('faq-list').innerHTML=D.faq.map(function(f,i){
+      return '<div class="vocab-card-col"><div style="font-weight:600;color:var(--text);font-size:13px;">Q: '+f.q+'</div><div style="font-size:12px;color:var(--text2);margin-top:4px;">A: '+f.a+'</div><button class="btn btn-danger btn-sm" style="margin-top:6px;" data-del="faq" data-i="'+i+'">删除</button></div>';
+    }).join('');
+  }
+
+  function openFAQForm(){
+    openModal('添加FAQ',field('q','问题','textarea')+field('a','答案','textarea'),function(){
+      var d={q:getVal('q'),a:getVal('a')}; if(!d.q||!d.a){alert('请填写完整');return false;}
+      D.faq.push(d);save();renderFAQ();return true;
+    });
+  }
+
+  function renderForeignNotes(){
+    var div=document.getElementById('foreign-equip-list');
+    if(D.foreignEquipNotes.length===0){div.innerHTML='<div class="empty-state">暂无资料，可添加海外客户关注的参数说明</div>';return;}
+    div.innerHTML=D.foreignEquipNotes.map(function(n,i){
+      return '<div class="vocab-card-col"><div style="font-weight:600;color:var(--text);">'+n.title+'</div><div style="font-size:12px;color:var(--text2);margin-top:3px;">'+n.content+'</div><button class="btn btn-danger btn-sm" style="margin-top:6px;" data-del="foreign" data-i="'+i+'">删除</button></div>';
+    }).join('');
+  }
+
+  function openForeignForm(){
+    openModal('添加外贸资料',field('title','标题','text')+field('content','内容','textarea'),function(){
+      var d={title:getVal('title'),content:getVal('content')}; if(!d.title){alert('请填写标题');return false;}
+      D.foreignEquipNotes.push(d);save();renderForeignNotes();return true;
+    });
+  }
+
+  // ==================== SCRIPTS ====================
+  function renderScripts(){
+    var cats={}; D.scripts.forEach(function(s){ if(!cats[s.cat])cats[s.cat]=[]; cats[s.cat].push(s); });
+    var container=document.getElementById('scripts-container'), html='';
+    Object.keys(cats).forEach(function(cat){
+      html+='<div class="card"><div class="card-header"><span class="script-cat-title">📌 '+cat+'</span></div>';
+      cats[cat].forEach(function(s){ html+='<div class="script-item"><span class="script-text">'+s.text+'</span><button class="btn btn-danger btn-sm" data-del="script" data-script-cat="'+s.cat+'" data-script-text="'+s.text.replace(/"/g,'&quot;')+'">删除</button></div>'; });
+      html+='</div>';
+    });
+    container.innerHTML=html;
+  }
+
+  function openScriptForm(){
+    openModal('添加话术',field('cat','分类','select',['抖音私信开场','询价应对','压价应对','邀约看场地','客户犹豫','外贸沟通','常见问题'])+field('text','话术内容','textarea'),function(){
+      var d={cat:getVal('cat'),text:getVal('text')}; if(!d.text){alert('请填写话术内容');return false;}
+      D.scripts.push(d);save();renderScripts();return true;
+    });
+  }
+
+  // ==================== HEALTH ====================
+  function renderHealthCheckins(){
+    var div=document.getElementById('health-checkin-list');
+    D.healthCheckins.sort(function(a,b){return b.date.localeCompare(a.date);});
+    if(D.healthCheckins.length===0){div.innerHTML='<div class="empty-state">还没有运动打卡记录，今天开始吧！</div>';return;}
+    div.innerHTML=D.healthCheckins.map(function(c,i){
+      return '<div class="checkin-row"><span class="checkin-date">'+c.date+'</span><span class="checkin-content">'+(c.content||'运动打卡')+'</span><span class="checkin-status">'+(c.done?'<span class="tag tag-green">✓ 完成</span>':'<span class="tag tag-red">未完成</span>')+'</span><input type="checkbox" class="checkin-check" '+(c.done?'checked':'')+' data-toggle="hcheckin" data-i="'+i+'"><button class="btn btn-danger btn-sm" data-del="hcheckin" data-i="'+i+'">��</button></div>';
+    }).join('');
+  }
+
+  function openHealthCheckinForm(){
+    var td=todayStr();
+    openModal('运动打卡',field('date','日期','date',null,td)+field('content','运动内容','textarea')+fieldCb('done','已完成',true),function(){
+      var d={date:getVal('date')||td,content:getVal('content'),done:getVal('done')};
+      D.healthCheckins.unshift(d);save();renderHealthCheckins();renderHome();return true;
+    });
+  }
+
+  function renderExerciseRecords(){
+    var tbody=document.getElementById('exercise-tbody');
+    D.exerciseRecords.sort(function(a,b){return b.date.localeCompare(a.date);});
+    if(D.exerciseRecords.length===0){tbody.innerHTML='<tr><td colspan="5" class="empty-state">暂无运动记录</td></tr>';return;}
+    tbody.innerHTML=D.exerciseRecords.map(function(e,i){
+      return '<tr><td>'+e.date+'</td><td>'+e.activity+'</td><td>'+e.duration+'</td><td>'+tf(e.note,20)+'</td><td><button class="btn btn-danger btn-sm" data-del="exercise" data-i="'+i+'">删除</button></td></tr>';
+    }).join('');
+  }
+
+  function openExerciseForm(){
+    openModal('记录运动',field('date','日期','date',null,todayStr())+field('activity','运动项目','text')+field('duration','时长（分钟）','text')+field('note','备注','text'),function(){
+      var d={date:getVal('date')||todayStr(),activity:getVal('activity'),duration:getVal('duration'),note:getVal('note')};
+      if(!d.activity){alert('请填写运动项目');return false;}
+      D.exerciseRecords.unshift(d);save();renderExerciseRecords();return true;
+    });
+  }
+
+  function renderBodyRecords(){
+    var div=document.getElementById('body-status-list');
+    D.bodyRecords.sort(function(a,b){return b.date.localeCompare(a.date);});
+    if(D.bodyRecords.length===0){div.innerHTML='<div class="empty-state">暂无身体状态记录</div>';return;}
+    div.innerHTML=D.bodyRecords.map(function(r,i){
+      return '<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;"><div style="display:flex;justify-content:space-between;"><span style="font-weight:600;font-size:13px;">'+r.date+'</span><span style="font-size:11px;color:var(--text3);">睡眠: '+(r.sleep||'-')+'</span></div><div style="font-size:12px;color:var(--text2);">'+(r.mood?'心情: '+r.mood+' · ':'')+(r.note||'')+'</div><button class="btn btn-danger btn-sm" style="margin-top:4px;" data-del="body" data-i="'+i+'">删除</button></div>';
+    }).join('');
+  }
+
+  function openBodyForm(){
+    openModal('身体状态记录',field('date','日期','date',null,todayStr())+field('sleep','昨晚睡眠','select',['很好','一���','不好'])+field('mood','心情','select',['😊 愉快','😐 平静','😞 低落'])+field('note','备注','textarea'),function(){
+      var d={date:getVal('date')||todayStr(),sleep:getVal('sleep'),mood:getVal('mood'),note:getVal('note')};
+      D.bodyRecords.unshift(d);save();renderBodyRecords();return true;
+    });
+  }
+
+  // ==================== EVENT DELEGATION ====================
+  document.addEventListener('click',function(e){
+    var t=e.target, ds;
+    // ---- Direct button IDs ----
+    if(t.id==='btn-add-vocab'){ openVocabForm();return; }
+    if(t.id==='btn-add-phrase'){ openPhraseForm();return; }
+    if(t.id==='btn-add-eng-checkin'){ openEngCheckinForm();return; }
+    if(t.id==='btn-add-review'){ openReviewForm();return; }
+    if(t.id==='btn-add-daily-phrase'){ openDailyPhraseForm();return; }
+    if(t.id==='btn-add-customer'){ openCustomerForm();return; }
+    if(t.id==='btn-add-follow-log'){ openFollowLogForm();return; }
+    if(t.id==='cal-prev'){ if(D.calMonth===0){D.calMonth=11;D.calYear--;}else D.calMonth--; save();renderCalendar();return; }
+    if(t.id==='cal-next'){ if(D.calMonth===11){D.calMonth=0;D.calYear++;}else D.calMonth++; save();renderCalendar();return; }
+    if(t.id==='btn-add-equip-archive'){ openEquipArchiveForm();return; }
+    if(t.id==='btn-add-inventory'){ openInventoryForm();return; }
+    if(t.id==='btn-add-faq'){ openFAQForm();return; }
+    if(t.id==='btn-add-foreign'){ openForeignForm();return; }
+    if(t.id==='btn-export'){ exportData();return; }
+    if(t.id==='btn-import'){ importData();return; }
+    if(t.id==='btn-add-script'){ openScriptForm();return; }
+    if(t.id==='btn-add-health-checkin'){ openHealthCheckinForm();return; }
+    if(t.id==='btn-add-exercise'){ openExerciseForm();return; }
+    if(t.id==='btn-add-body'){ openBodyForm();return; }
+
+    // ---- data-edit ----
+    ds=t.dataset; if(ds.edit){
+      var i=parseInt(ds.i);
+      if(ds.edit==='vocab') openVocabForm(i);
+      else if(ds.edit==='review') openReviewForm(i);
+      else if(ds.edit==='customer') openCustomerForm(i);
+      else if(ds.edit==='eq-archive') openEquipArchiveForm(i);
+      else if(ds.edit==='inventory') openInventoryForm(i);
+      return;
+    }
+
+    // ---- data-del ----
+    if(ds.del){
+      i=parseInt(ds.i);
+      if(ds.del==='vocab') deleteVocab(i);
+      else if(ds.del==='phrase'){ D.phrases.splice(i,1);save();renderPhrases(); }
+      else if(ds.del==='engcheckin'){ D.englishCheckins.splice(i,1);save();renderEnglishCheckins(); }
+      else if(ds.del==='review'){ if(confirm('确定删除？')){D.reviewWords.splice(i,1);save();renderReviewWords();} }
+      else if(ds.del==='dailyphrase'){ D.dailyPhrases.splice(i,1);save();renderDailyPhrases(); }
+      else if(ds.del==='customer') deleteCustomer(i);
+      else if(ds.del==='followlog'){ D.followLogs.splice(i,1);save();renderFollowLogs(); }
+      else if(ds.del==='eq-archive'){ D.equipmentArchive.splice(i,1);save();renderEquipmentArchive(); }
+      else if(ds.del==='inventory'){ D.inventory.splice(i,1);save();renderInventory();renderHome(); }
+      else if(ds.del==='faq'){ D.faq.splice(i,1);save();renderFAQ(); }
+      else if(ds.del==='foreign'){ D.foreignEquipNotes.splice(i,1);save();renderForeignNotes(); }
+      else if(ds.del==='script'){
+        var scat=ds.scriptCat, stxt=ds.scriptText.replace(/&quot;/g,'"');
+        for(var j=D.scripts.length-1;j>=0;j--){ if(D.scripts[j].cat===scat&&D.scripts[j].text===stxt){ D.scripts.splice(j,1);break; } }
+        save();renderScripts();
+      }
+      else if(ds.del==='hcheckin'){ D.healthCheckins.splice(i,1);save();renderHealthCheckins();renderHome(); }
+      else if(ds.del==='exercise'){ D.exerciseRecords.splice(i,1);save();renderExerciseRecords(); }
+      else if(ds.del==='body'){ D.bodyRecords.splice(i,1);save();renderBodyRecords(); }
+      return;
+    }
+
+    // ---- data-toggle ----
+    if(ds.toggle){
+      i=parseInt(ds.i);
+      if(ds.toggle==='engcheckin'){ D.englishCheckins[i].done=!D.englishCheckins[i].done;save();renderEnglishCheckins(); }
+      else if(ds.toggle==='hcheckin'){ D.healthCheckins[i].done=!D.healthCheckins[i].done;save();renderHealthCheckins();renderHome(); }
+      return;
+    }
+  });
+
+  // ==================== INIT ====================
+  function renderAll(){
+    var fns = [renderHome,renderVocab,renderPhrases,renderDailyPhrases,renderEnglishCheckins,renderReviewWords,
+      renderCustomers,renderFollowLogs,renderCalendar,
+      renderEquipmentArchive,renderInventory,renderFAQ,renderForeignNotes,
+      renderScripts,renderHealthCheckins,renderExerciseRecords,renderBodyRecords];
+    var errs = [];
+    for(var i=0;i<fns.length;i++){
+      try{ fns[i](); }catch(e){ errs.push(e.message); }
+    }
+    if(errs.length>0){
+      document.body.innerHTML += '<div style="position:fixed;bottom:10px;left:10px;right:10px;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;padding:12px;border-radius:8px;z-index:9999;font-size:12px">渲染出错('+errs.length+'项): '+errs.join('; ')+'<br><small>请尝试刷新页面</small></div>';
+    }
+    return errs.length===0;
+  }
+  try { var ok = renderAll(); if(!ok) console.warn('部分渲染出错，详见页面底部提示'); } catch(e) { document.body.innerHTML += '<div style="position:fixed;bottom:10px;left:10px;right:10px;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;padding:12px;border-radius:8px;z-index:9999;font-size:13px">页面初始化出错，请刷新重试。<br><small>'+e.message+'</small></div>'; }
+
+  // ==================== MOBILE MENU ====================
+  var hamburger = document.getElementById('hamburger-btn');
+  var sidebar   = document.querySelector('.sidebar');
+  var overlay   = document.getElementById('sidebar-overlay');
+
+  function openSidebar(){
+    sidebar.classList.add('open');
+    overlay.classList.add('show');
+  }
+  function closeSidebar(){
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  }
+
+  hamburger.addEventListener('click',function(){
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  overlay.addEventListener('click',closeSidebar);
+
+  // Close sidebar after nav item click on mobile
+  document.querySelectorAll('.nav-item').forEach(function(el){
+    el.addEventListener('click',function(){
+      if(window.innerWidth <= 900){ closeSidebar(); }
+    });
+  });
+
+  // Mobile bottom nav buttons
+  document.querySelectorAll('.mob-nav button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var s = this.dataset.section;
+      document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+      var navItem = document.querySelector('.nav-item[data-section="'+s+'"]');
+      if(navItem) navItem.classList.add('active');
+      document.querySelectorAll('.mob-nav button').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      document.getElementById('topbar-title').textContent = navMap[s];
+      document.querySelectorAll('.section').forEach(function(sec){ sec.classList.remove('active'); });
+      document.getElementById('section-'+s).classList.add('active');
+      if(s==='customers') renderCalendar();
+      if(s==='home') renderHome();
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>
