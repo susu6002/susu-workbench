@@ -40,6 +40,34 @@ body{
 .topbar-title{font-size:18px;font-weight:700;color:var(--text)}
 .topbar-right{margin-left:auto;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:16px}
 .today-date{color:var(--text3)}
+/* Cloud sync styles */
+.sync-indicator{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:14px;border:1px solid var(--border);background:var(--white);transition:all .2s}
+.sync-indicator:hover{background:#f9fafb}
+.sync-dot{width:8px;height:8px;border-radius:50%}
+.sync-dot.online{background:var(--green)}
+.sync-dot.syncing{background:var(--orange);animation:pulse 1s infinite}
+.sync-dot.offline{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sync-text{font-size:12px;color:var(--text2);white-space:nowrap}
+/* Token modal */
+.token-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center}
+.token-box{background:var(--white);border-radius:12px;padding:28px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.token-box h3{font-size:16px;margin-bottom:8px}
+.token-box p{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.7}
+.token-box input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:monospace;margin-bottom:12px}
+.token-box .token-actions{display:flex;gap:10px;justify-content:flex-end}
+.token-box .token-actions button{padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600}
+.token-box .btn-save{background:var(--blue);color:#fff}
+.token-box .btn-skip{background:#f3f4f6;color:var(--text2)}
+/* touch-friendly buttons */
+.btn{cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--text2);padding:6px 14px;border-radius:6px;font-size:12.5px;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{background:#f9fafb;color:var(--text)}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-primary:hover{background:#1d4ed8}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{color:var(--red);border-color:var(--red-l)}
+.btn-danger:hover{background:var(--red-l)}
+@media (max-width:900px){.sync-text{display:none}}
 .content{padding:24px 28px;flex:1}
 .section{display:none}
 .section.active{display:block}
@@ -229,6 +257,10 @@ tbody tr:hover{background:#fafbfc}
     <button class="hamburger" id="hamburger-btn" title="菜单">☰</button>
     <span class="topbar-title" id="topbar-title">工作台首页</span>
     <div class="topbar-right">
+      <span id="sync-status" class="sync-indicator" title="云端同步状态">
+        <span class="sync-dot" id="sync-dot"></span>
+        <span class="sync-text" id="sync-text">本地</span>
+      </span>
       <span>📍 河南郑州·上街区</span>
       <span class="today-date" id="today-date"></span>
     </div>
@@ -439,6 +471,9 @@ tbody tr:hover{background:#fafbfc}
 
   // ==================== DATA ====================
   const STORE = 'susudata_v2';
+  const CLOUD_RAW  = 'https://raw.githubusercontent.com/susu6002/susu-workbench/main/data.json';
+  const CLOUD_API  = 'https://api.github.com/repos/susu6002/susu-workbench/contents/data.json';
+
   function defaults(){
     return {
       vocabulary:[
@@ -592,20 +627,122 @@ tbody tr:hover{background:#fafbfc}
     };
   }
 
-  function load(){ try{ var r=localStorage.getItem(STORE); if(r) return JSON.parse(r); }catch(e){} return defaults(); }
-  function save(){ try{ localStorage.setItem(STORE, JSON.stringify(D)); }catch(e){} }
+  // ==================== CLOUD SYNC ENGINE ====================
+  var CLOUD_ENABLED = false;
+  var CLOUD_SHA = null;
+  var syncStatus = 'local';
+  function getToken() { try { return localStorage.getItem('susu_gh_token'); } catch(e) { return null; } }
+  function setToken(t) { try { localStorage.setItem('susu_gh_token', t); } catch(e) {} }
+  function updateSyncUI() {
+    var dot = document.getElementById('sync-dot');
+    var txt = document.getElementById('sync-text');
+    if (!dot || !txt) return;
+    dot.className = 'sync-dot ' + syncStatus;
+    var labels = { local: '仅本地', online: '已同步', syncing: '同步中…', offline: '离线' };
+    txt.textContent = labels[syncStatus] || '仅本地';
+  }
+
+  function load() {
+    var d = null;
+    try { var r = localStorage.getItem(STORE); if (r) { d = JSON.parse(r); if (d && d.vocabulary) return d; } } catch(e) {}
+    return defaults();
+  }
+
   var D = load();
-  // Data upgrade: if version is outdated, refresh scripts & equipment from defaults
   var _def = defaults();
   if (!D.dataVersion || D.dataVersion < _def.dataVersion) {
-    D.scripts = _def.scripts;
-    D.equipmentArchive = _def.equipmentArchive;
-    D.dailyPhrases = _def.dailyPhrases;
-    D.inventory = _def.inventory;
-    D.dataVersion = _def.dataVersion;
-    save();
+    D.scripts = _def.scripts; D.equipmentArchive = _def.equipmentArchive;
+    D.dailyPhrases = _def.dailyPhrases; D.inventory = _def.inventory;
+    D.dataVersion = _def.dataVersion; saveLocal();
   }
-  if(!localStorage.getItem(STORE)) save();
+  if (!localStorage.getItem(STORE)) saveLocal();
+
+  function saveLocal() { try { localStorage.setItem(STORE, JSON.stringify(D)); } catch(e) {} }
+  function save() { saveLocal(); if (CLOUD_ENABLED) syncToCloud(); }
+
+  function syncFromCloud(callback) {
+    if (!CLOUD_ENABLED) { if (callback) callback(); return; }
+    syncStatus = 'syncing'; updateSyncUI();
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', CLOUD_RAW + '?t=' + Date.now(), true); xhr.timeout = 8000;
+    xhr.onload = function() {
+      try {
+        var cloud = JSON.parse(xhr.responseText);
+        if ((cloud.lastModified || 0) > (D.lastModified || 0)) { D = cloud; saveLocal(); renderAll(); syncStatus = 'online'; if (callback) callback(true); }
+        else if ((D.lastModified || 0) > 0) { syncStatus = 'online'; syncToCloud(); if (callback) callback(true); }
+        else { syncStatus = 'online'; if (callback) callback(true); }
+      } catch(e) { syncStatus = 'offline'; if (callback) callback(false); }
+      updateSyncUI();
+    };
+    xhr.onerror = function() { syncStatus = 'offline'; updateSyncUI(); if (callback) callback(false); };
+    xhr.ontimeout = function() { syncStatus = 'offline'; updateSyncUI(); if (callback) callback(false); };
+    xhr.send();
+  }
+
+  function syncToCloud() {
+    if (!CLOUD_ENABLED) return;
+    var token = getToken(); if (!token) return;
+    D.lastModified = Date.now();
+    syncStatus = 'syncing'; updateSyncUI();
+    var content = btoa(unescape(encodeURIComponent(JSON.stringify(D))));
+    var body = JSON.stringify({ message: '同步更新 ' + new Date().toLocaleString('zh-CN'), content: content });
+    if (CLOUD_SHA) body = JSON.stringify({ message: '同步更新 ' + new Date().toLocaleString('zh-CN'), content: content, sha: CLOUD_SHA });
+    var xhr = new XMLHttpRequest();
+    xhr.open('PUT', CLOUD_API, true); xhr.timeout = 10000;
+    xhr.setRequestHeader('Authorization', 'token ' + token);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = function() {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try { var r = JSON.parse(xhr.responseText); CLOUD_SHA = r.content && r.content.sha; syncStatus = 'online'; } catch(e) { syncStatus = 'offline'; }
+      } else if (xhr.status === 409) { fetchCloudSha(function() { syncFromCloud(function(){}); }); }
+      else { syncStatus = 'offline'; }
+      updateSyncUI();
+    };
+    xhr.onerror = function() { syncStatus = 'offline'; updateSyncUI(); };
+    xhr.send(body);
+  }
+
+  function fetchCloudSha(callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', CLOUD_API, true);
+    var token = getToken(); if (token) xhr.setRequestHeader('Authorization', 'token ' + token);
+    xhr.onload = function() { try { CLOUD_SHA = JSON.parse(xhr.responseText).sha || null; } catch(e) {} if (callback) callback(); };
+    xhr.onerror = function() { if (callback) callback(); };
+    xhr.send();
+  }
+
+  function showTokenModal() {
+    var existing = document.getElementById('token-setup-modal'); if (existing) existing.remove();
+    var html = '<div class="token-modal" id="token-setup-modal"><div class="token-box">';
+    html += '<h3>☁️ 开启云端同步</h3>';
+    html += '<p>输入你的 GitHub Token，数据就能在所有设备间实时同步。<br>出差、换电脑——数据永远跟着你。</p>';
+    html += '<input type="password" id="token-input" placeholder="粘贴 GitHub Token (ghp_xxx...)">';
+    html += '<div class="token-actions"><button class="btn-skip" id="token-skip">暂不设置</button>';
+    html += '<button class="btn-save" id="token-save">开启同步</button></div></div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+    document.getElementById('token-save').onclick = function() {
+      var t = document.getElementById('token-input').value.trim();
+      if (!t || !t.startsWith('ghp_')) { alert('请输入有效的 GitHub Token（以 ghp_ 开头）'); return; }
+      setToken(t); document.getElementById('token-setup-modal').remove(); enableCloudSync();
+    };
+    document.getElementById('token-skip').onclick = function() { document.getElementById('token-setup-modal').remove(); };
+    document.getElementById('token-input').addEventListener('keydown', function(e) { if (e.key==='Enter') document.getElementById('token-save').click(); });
+  }
+
+  function enableCloudSync() {
+    CLOUD_ENABLED = true;
+    fetchCloudSha(function() { syncFromCloud(function(s) { if (!s) syncToCloud(); }); });
+  }
+
+  document.getElementById('sync-status').addEventListener('click', function() {
+    if (CLOUD_ENABLED) { syncFromCloud(function(){}); } else { showTokenModal(); }
+  });
+
+  (function initCloud() {
+    if (getToken()) { enableCloudSync(); }
+    else { setTimeout(function() { if (!getToken()) showTokenModal(); }, 1500); }
+    updateSyncUI();
+  })();
 
   // ==================== EXPORT / IMPORT ====================
   function exportData(){
