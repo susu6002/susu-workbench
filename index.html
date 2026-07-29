@@ -176,34 +176,45 @@ tbody tr:hover{background:#fafbfc}
 /* Responsive */
 @media(max-width:900px){
   body{flex-direction:column}
-  .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .25s;box-shadow:2px 0 12px rgba(0,0,0,.15);width:240px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .25s;box-shadow:2px 0 12px rgba(0,0,0,.15);width:260px;max-width:85vw;overflow-y:auto;-webkit-overflow-scrolling:touch}
   .sidebar.open{transform:translateX(0)}
   .main{margin-left:0}
-  .topbar{position:sticky;top:0;z-index:99}
+  .topbar{position:sticky;top:0;z-index:90;padding:0 12px;height:50px}
+  .topbar-title{font-size:16px}
+  .topbar-right{font-size:11px;gap:8px}
   .grid-2,.grid-3,.stats-row{grid-template-columns:1fr}
   .profile-grid{grid-template-columns:1fr}
   .table-wrap{overflow-x:auto}
   .card{padding:14px 16px}
   .card-header{flex-wrap:wrap;gap:8px}
   .mob-nav{display:flex}
-  .hamburger{display:block}
+  .hamburger{display:flex}
+  .sidebar-close-btn{display:flex}
   .sync-bar{margin-top:8px}
-  .content{padding-bottom:70px !important}
+  .content{padding-bottom:80px !important}
+  /* Token modal mobile */
+  .token-modal{padding:16px;align-items:flex-end}
+  .token-box{max-width:100%;border-radius:16px 16px 4px 4px;padding:20px}
 }
-.hamburger{display:none;background:none;border:none;font-size:22px;cursor:pointer;padding:4px 8px;color:var(--text);line-height:1}
-.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);z-index:99;padding:6px 4px;justify-content:space-around}
-.mob-nav button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;font-size:10px;color:var(--text3);cursor:pointer;padding:4px 2px;border-radius:6px;min-width:50px}
+.hamburger{display:none;align-items:center;gap:4px;background:none;border:none;font-size:15px;cursor:pointer;padding:6px 10px;color:var(--text);border-radius:8px;white-space:nowrap;min-height:38px}
+.hamburger:active{background:#f3f4f6}
+.hamburger .hb-icon{font-size:20px;line-height:1}
+.sidebar-close-btn{display:none;position:absolute;top:8px;right:8px;width:32px;height:32px;align-items:center;justify-content:center;background:var(--bg);border:none;border-radius:50%;font-size:18px;cursor:pointer;color:var(--text2);z-index:10}
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);z-index:99;padding:6px 6px env(safe-area-inset-bottom,8px);justify-content:space-around;box-shadow:0 -2px 10px rgba(0,0,0,.06)}
+.mob-nav button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;font-size:10px;color:var(--text3);cursor:pointer;padding:6px 4px;border-radius:8px;min-width:48px;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.mob-nav button:active{background:#f3f4f6}
 .mob-nav button.active{color:var(--blue)}
-.mob-nav button .ni{font-size:18px}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:199}
+.mob-nav button .ni{font-size:20px;line-height:1.2}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:199}
 .overlay.show{display:block}
-@media(min-width:901px){.overlay{display:none!important}}
+@media(min-width:901px){.overlay{display:none!important}.sidebar-close-btn{display:none!important}}
 </style>
 </head>
 <body>
 
 <!-- ==================== SIDEBAR ==================== -->
 <aside class="sidebar">
+  <button class="sidebar-close-btn" id="sidebar-close-btn" title="关闭菜单">✕</button>
   <div class="sidebar-logo">
     <div class="name">素素</div>
     <div class="sub">矿山设备业务工作台</div>
@@ -254,7 +265,7 @@ tbody tr:hover{background:#fafbfc}
 <!-- ==================== MAIN ==================== -->
 <div class="main">
   <header class="topbar">
-    <button class="hamburger" id="hamburger-btn" title="菜单">☰</button>
+    <button class="hamburger" id="hamburger-btn" title="菜单"><span class="hb-icon">☰</span> 菜单</button>
     <span class="topbar-title" id="topbar-title">工作台首页</span>
     <div class="topbar-right">
       <span id="sync-status" class="sync-indicator" title="云端同步状态">
@@ -713,20 +724,22 @@ tbody tr:hover{background:#fafbfc}
 
   function showTokenModal() {
     var existing = document.getElementById('token-setup-modal'); if (existing) existing.remove();
-    var html = '<div class="token-modal" id="token-setup-modal"><div class="token-box">';
+    var html = '<div class="token-modal" id="token-setup-modal"><div class="token-overlay" style="position:absolute;inset:0"></div><div class="token-box" style="position:relative;z-index:1">';
     html += '<h3>☁️ 开启云端同步</h3>';
     html += '<p>输入你的 GitHub Token，数据就能在所有设备间实时同步。<br>出差、换电脑——数据永远跟着你。</p>';
     html += '<input type="password" id="token-input" placeholder="粘贴 GitHub Token (ghp_xxx...)">';
     html += '<div class="token-actions"><button class="btn-skip" id="token-skip">暂不设置</button>';
     html += '<button class="btn-save" id="token-save">开启同步</button></div></div></div>';
     document.body.insertAdjacentHTML('beforeend', html);
+    var modal = document.getElementById('token-setup-modal');
     document.getElementById('token-save').onclick = function() {
       var t = document.getElementById('token-input').value.trim();
       if (!t || !t.startsWith('ghp_')) { alert('请输入有效的 GitHub Token（以 ghp_ 开头）'); return; }
-      setToken(t); document.getElementById('token-setup-modal').remove(); enableCloudSync();
+      setToken(t); modal.remove(); enableCloudSync();
     };
-    document.getElementById('token-skip').onclick = function() { document.getElementById('token-setup-modal').remove(); };
+    document.getElementById('token-skip').onclick = function() { modal.remove(); try{localStorage.setItem('susu_token_skipped','1');}catch(e){} };
     document.getElementById('token-input').addEventListener('keydown', function(e) { if (e.key==='Enter') document.getElementById('token-save').click(); });
+    modal.querySelector('.token-overlay').addEventListener('click', function() { modal.remove(); try{localStorage.setItem('susu_token_skipped','1');}catch(e){} });
   }
 
   function enableCloudSync() {
@@ -740,7 +753,11 @@ tbody tr:hover{background:#fafbfc}
 
   (function initCloud() {
     if (getToken()) { enableCloudSync(); }
-    else { setTimeout(function() { if (!getToken()) showTokenModal(); }, 1500); }
+    else {
+      var skipped = false;
+      try { skipped = localStorage.getItem('susu_token_skipped') === '1'; } catch(e) {}
+      if (!skipped) { setTimeout(function() { if (!getToken()) showTokenModal(); }, 1500); }
+    }
     updateSyncUI();
   })();
 
@@ -1284,19 +1301,29 @@ tbody tr:hover{background:#fafbfc}
   var hamburger = document.getElementById('hamburger-btn');
   var sidebar   = document.querySelector('.sidebar');
   var overlay   = document.getElementById('sidebar-overlay');
+  var closeBtn  = document.getElementById('sidebar-close-btn');
 
   function openSidebar(){
     sidebar.classList.add('open');
     overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
   }
   function closeSidebar(){
     sidebar.classList.remove('open');
     overlay.classList.remove('show');
+    document.body.style.overflow = '';
   }
 
-  hamburger.addEventListener('click',function(){
+  hamburger.addEventListener('click',function(e){
+    e.preventDefault();
     sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
   });
+  // Touch events for more reliable mobile behavior
+  hamburger.addEventListener('touchend',function(e){
+    e.preventDefault();
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  if(closeBtn) closeBtn.addEventListener('click',function(e){ e.preventDefault(); closeSidebar(); });
   overlay.addEventListener('click',closeSidebar);
 
   // Close sidebar after nav item click on mobile
@@ -1308,18 +1335,25 @@ tbody tr:hover{background:#fafbfc}
 
   // Mobile bottom nav buttons
   document.querySelectorAll('.mob-nav button').forEach(function(btn){
-    btn.addEventListener('click', function(){
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
       var s = this.dataset.section;
+      if(!s) return;
       document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
       var navItem = document.querySelector('.nav-item[data-section="'+s+'"]');
       if(navItem) navItem.classList.add('active');
       document.querySelectorAll('.mob-nav button').forEach(function(b){ b.classList.remove('active'); });
       this.classList.add('active');
-      document.getElementById('topbar-title').textContent = navMap[s];
+      if(navMap[s]) document.getElementById('topbar-title').textContent = navMap[s];
       document.querySelectorAll('.section').forEach(function(sec){ sec.classList.remove('active'); });
-      document.getElementById('section-'+s).classList.add('active');
+      var secEl = document.getElementById('section-'+s);
+      if(secEl) {
+        secEl.classList.add('active');
+        secEl.scrollIntoView({block:'start',behavior:'smooth'});
+      }
       if(s==='customers') renderCalendar();
       if(s==='home') renderHome();
+      closeSidebar();
     });
   });
 
