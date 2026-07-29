@@ -698,13 +698,20 @@ tbody tr:hover{background:#fafbfc}
 
   function fixGarbled(s) {
     if (typeof s !== 'string' || s.length === 0) return s;
+    // SAFETY: if string already has non-Latin-1 chars (like Chinese/emoji),
+    // it's already clean — don't touch it.
+    for (var k = 0; k < s.length; k++) {
+      if (s.charCodeAt(k) > 0xFF) return s;
+    }
+    // All chars are Latin-1 range: this MIGHT be double-encoded UTF-8.
     var fixed = s;
     for (var pass = 0; pass < 2; pass++) {
       try {
         var arr = new Uint8Array(fixed.length);
-        for (var k = 0; k < fixed.length; k++) arr[k] = fixed.charCodeAt(k) & 0xFF;
+        for (var j = 0; j < fixed.length; j++) arr[j] = fixed.charCodeAt(j) & 0xFF;
         var next = new TextDecoder('utf-8').decode(arr);
         if (next === fixed) break;
+        // Additional safety: if "fixed" text still has no CJK, maybe it's truly garbled
         fixed = next;
       } catch(e) { break; }
     }
