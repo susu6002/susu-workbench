@@ -696,17 +696,41 @@ tbody tr:hover{background:#fafbfc}
   function saveLocal() { try { localStorage.setItem(STORE, JSON.stringify(D)); } catch(e) {} }
   function save() { saveLocal(); if (CLOUD_ENABLED) syncToCloud(); }
 
+  function mergeFromCloud(cloud) {
+    var arrFields = ['vocabulary','phrases','englishCheckins','reviewWords','dailyPhrases','customers','followLogs','equipmentArchive','inventory','faq','foreignEquipNotes','scripts','healthCheckins','exerciseRecords','bodyRecords'];
+    for (var i = 0; i < arrFields.length; i++) {
+      var f = arrFields[i];
+      var local = D[f] || [];
+      var remote = cloud[f] || [];
+      var seen = {};
+      var merged = [];
+      var combined = local.concat(remote);
+      for (var j = 0; j < combined.length; j++) {
+        if (combined[j] === null || combined[j] === undefined) continue;
+        var key = JSON.stringify(combined[j]);
+        if (!seen[key]) { seen[key] = true; merged.push(combined[j]); }
+      }
+      D[f] = merged;
+    }
+    D.lastModified = Math.max(D.lastModified || 0, cloud.lastModified || 0, Date.now());
+    saveLocal();
+    try { renderAll(); } catch(e) {}
+  }
+
   function syncFromCloud(callback) {
     if (!CLOUD_ENABLED) { if (callback) callback(); return; }
     syncStatus = 'syncing'; updateSyncUI();
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', CLOUD_RAW + '?t=' + Date.now(), true); xhr.timeout = 8000;
+    xhr.open('GET', CLOUD_API + '?t=' + Date.now(), true); xhr.timeout = 15000;
+    var token = getToken(); if (token) xhr.setRequestHeader('Authorization', 'token ' + token);
     xhr.onload = function() {
       try {
-        var cloud = JSON.parse(xhr.responseText);
-        if ((cloud.lastModified || 0) > (D.lastModified || 0)) { D = cloud; saveLocal(); renderAll(); syncStatus = 'online'; if (callback) callback(true); }
-        else if ((D.lastModified || 0) > 0) { syncStatus = 'online'; syncToCloud(); if (callback) callback(true); }
-        else { syncStatus = 'online'; if (callback) callback(true); }
+        var resp = JSON.parse(xhr.responseText);
+        var cloud = JSON.parse(atob(resp.content));
+        CLOUD_SHA = resp.sha;
+        mergeFromCloud(cloud);
+        syncStatus = 'online';
+        if (callback) callback(true);
       } catch(e) { syncStatus = 'offline'; if (callback) callback(false); }
       updateSyncUI();
     };
@@ -730,7 +754,7 @@ tbody tr:hover{background:#fafbfc}
     xhr.onload = function() {
       if (xhr.status >= 200 && xhr.status < 300) {
         try { var r = JSON.parse(xhr.responseText); CLOUD_SHA = r.content && r.content.sha; syncStatus = 'online'; } catch(e) { syncStatus = 'offline'; }
-      } else if (xhr.status === 409) { fetchCloudSha(function() { syncFromCloud(function(){}); }); }
+      } else if (xhr.status === 409) { fetchCloudSha(function() { syncFromCloud(function() { syncToCloud(); }); }); }
       else { syncStatus = 'offline'; }
       updateSyncUI();
     };
@@ -769,11 +793,11 @@ tbody tr:hover{background:#fafbfc}
 
   function enableCloudSync() {
     CLOUD_ENABLED = true;
-    fetchCloudSha(function() { syncFromCloud(function(s) { if (!s) syncToCloud(); }); });
+    fetchCloudSha(function() { syncFromCloud(function() { syncToCloud(); }); });
   }
 
   document.getElementById('sync-status').addEventListener('click', function() {
-    if (CLOUD_ENABLED) { syncFromCloud(function(){}); } else { showTokenModal(); }
+    if (CLOUD_ENABLED) { syncFromCloud(function() { syncToCloud(); }); } else { showTokenModal(); }
   });
 
   (function initCloud() {
