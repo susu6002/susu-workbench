@@ -726,7 +726,7 @@ tbody tr:hover{background:#fafbfc}
     xhr.onload = function() {
       try {
         var resp = JSON.parse(xhr.responseText);
-        var cloud = JSON.parse(atob(resp.content));
+        var cloud = JSON.parse(decodeURIComponent(escape(atob(resp.content))));
         CLOUD_SHA = resp.sha;
         mergeFromCloud(cloud);
         syncStatus = 'online';
