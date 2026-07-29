@@ -1298,33 +1298,33 @@ tbody tr:hover{background:#fafbfc}
   try { var ok = renderAll(); if(!ok) console.warn('部分渲染出错，详见页面底部提示'); } catch(e) { document.body.innerHTML += '<div style="position:fixed;bottom:10px;left:10px;right:10px;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;padding:12px;border-radius:8px;z-index:9999;font-size:13px">页面初始化出错，请刷新重试。<br><small>'+e.message+'</small></div>'; }
 
   // ==================== MOBILE MENU ====================
+  try {
   var hamburger = document.getElementById('hamburger-btn');
   var sidebar   = document.querySelector('.sidebar');
   var overlay   = document.getElementById('sidebar-overlay');
   var closeBtn  = document.getElementById('sidebar-close-btn');
 
   function openSidebar(){
+    if(!sidebar) return;
     sidebar.classList.add('open');
-    overlay.classList.add('show');
+    if(overlay) overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
   }
   function closeSidebar(){
+    if(!sidebar) return;
     sidebar.classList.remove('open');
-    overlay.classList.remove('show');
+    if(overlay) overlay.classList.remove('show');
     document.body.style.overflow = '';
   }
 
-  hamburger.addEventListener('click',function(e){
-    e.preventDefault();
-    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
-  });
-  // Touch events for more reliable mobile behavior
-  hamburger.addEventListener('touchend',function(e){
-    e.preventDefault();
-    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
-  });
+  if(hamburger) {
+    hamburger.addEventListener('click',function(e){
+      e.preventDefault();
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+  }
   if(closeBtn) closeBtn.addEventListener('click',function(e){ e.preventDefault(); closeSidebar(); });
-  overlay.addEventListener('click',closeSidebar);
+  if(overlay) overlay.addEventListener('click',closeSidebar);
 
   // Close sidebar after nav item click on mobile
   document.querySelectorAll('.nav-item').forEach(function(el){
@@ -1356,6 +1356,7 @@ tbody tr:hover{background:#fafbfc}
       closeSidebar();
     });
   });
+  } catch(e) { console.warn('移动端导航初始化出错: ' + e.message); }
 
 })();
 </script>
