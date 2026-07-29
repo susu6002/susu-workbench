@@ -580,7 +580,7 @@ tbody tr:hover{background:#fafbfc}
         {name:"PE颚式破碎机",model:"PE-1200×1500",cat:"粗碎·颚破",spec:"进料1020mm·出料150-300mm·460-900t/h·200kW",config:"超重型机架·大型飞轮·加强颚板",pros:"超大型产能·适合特大型矿山",notes:"重量100.9t·运输安装需注意"},
         {name:"HST单缸圆锥破",model:"HST160 S1",cat:"中细碎·圆锥",spec:"进料360mm·排料≥25mm·120-345t/h·132kW",config:"液压润滑一体化·正压防尘·多腔型",pros:"破碎效率高·运行成本低·全自动控制",notes:"中碎用S腔·细碎用H腔·二手市场热门"},
         {name:"HST单缸圆锥破",model:"HST250 S1",cat:"中细碎·圆锥",spec:"进料450mm·排料≥35mm·255-605t/h·220kW",config:"单缸液压·多腔型可选·PLC智能控制",pros:"中硬以上岩石·处理量大·粒型可控",notes:"适配中大型生产线·与HPT搭配效果好"},
-        {name:"HST单缸圆锥破",model:"HST315 S1",cat:"���细碎·圆锥",spec:"进料560mm·排料≥41mm·335-1050t/h·315kW",config:"大型单缸液压·正压防尘·智能监控",pros:"超大产能·硬岩中碎首选·能耗比优",notes:"大型矿山/商混站核心设备"},
+        {name:"HST单缸圆锥破",model:"HST315 S1",cat:"中细碎·圆锥",spec:"进料560mm·排料≥41mm·335-1050t/h·315kW",config:"大型单缸液压·正压防尘·智能监控",pros:"超大产能·硬岩中碎首选·能耗比优",notes:"大型矿山/商混站核心设备"},
         {name:"HPT多缸圆锥破",model:"HPT300 C1 ⭐",cat:"中细碎·圆锥",spec:"进料230mm·排料≥25mm·220-440t/h·250kW",config:"层压破碎·液压马达调排料·一体润滑",pros:"粒型立方体·细粒级含量高·磨损低",notes:"细碎整形效果好·二手市场最热门型号之一"},
         {name:"HPT多缸圆锥破",model:"HPT400 C1",cat:"中细碎·圆锥",spec:"进料295mm·排料≥30mm·300-630t/h·315kW",config:"多缸液压·智能控制系统·保险缸+蓄能器",pros:"产量大·粒型好·过载保护可靠",notes:"中大型细碎/整形·二手市场认可度高"},
         {name:"HPT多缸圆锥破",model:"HPT500 C1",cat:"中细碎·圆锥",spec:"进料330mm·排料≥38mm·425-790t/h·400kW",config:"大型多缸·全自动控制·远程调节排料口",pros:"超大型产能·细碎粒型好·智能运行",notes:"大型矿山旗舰级细碎设备"},
@@ -698,24 +698,27 @@ tbody tr:hover{background:#fafbfc}
 
   function fixGarbled(s) {
     if (typeof s !== 'string' || s.length === 0) return s;
-    // SAFETY: if string already has non-Latin-1 chars (like Chinese/emoji),
-    // it's already clean — don't touch it.
+    // SAFETY 1: if string has any non-Latin-1 char (Chinese/emoji etc.),
+    // it's clean — don't touch it.
     for (var k = 0; k < s.length; k++) {
       if (s.charCodeAt(k) > 0xFF) return s;
     }
-    // All chars are Latin-1 range: this MIGHT be double-encoded UTF-8.
-    var fixed = s;
-    for (var pass = 0; pass < 2; pass++) {
-      try {
-        var arr = new Uint8Array(fixed.length);
-        for (var j = 0; j < fixed.length; j++) arr[j] = fixed.charCodeAt(j) & 0xFF;
-        var next = new TextDecoder('utf-8').decode(arr);
-        if (next === fixed) break;
-        // Additional safety: if "fixed" text still has no CJK, maybe it's truly garbled
-        fixed = next;
-      } catch(e) { break; }
-    }
-    return fixed;
+    // SAFETY 2: if string contains any replacement char, it's already broken
+    // and can't be reliably fixed — bail out.
+    if (s.indexOf('\ufffd') >= 0) return s;
+    // All chars are in Latin-1 range (0-255). These bytes MIGHT be
+    // double-encoded UTF-8 (e.g. "è¯¢" → "询价"), but they might also be
+    // legitimate Latin-1 text (e.g. "PE-600×900").
+    // CRITICAL: only accept the decoded result if it contains NO replacement
+    // characters (U+FFFD). Invalid UTF-8 sequences produce U+FFFD, which
+    // means the input was NOT double-encoded — it was legitimate Latin-1.
+    try {
+      var arr = new Uint8Array(s.length);
+      for (var j = 0; j < s.length; j++) arr[j] = s.charCodeAt(j) & 0xFF;
+      var decoded = new TextDecoder('utf-8').decode(arr);
+      if (decoded.indexOf('\ufffd') === -1 && decoded !== s) return decoded;
+    } catch(e) {}
+    return s;
   }
   function fixObj(o) {
     if (typeof o === 'string') return fixGarbled(o);
