@@ -177,6 +177,15 @@ tbody tr:hover{background:#fafbfc}
 .health-reminder .r-label{font-size:12px;color:var(--text3)}
 .health-reminder .r-desc{font-size:12px;color:var(--text2)}
 /* Responsive */
+
+/* Mobile horizontal tab bar — default hidden, @media below overrides on mobile */
+.mob-tabs{display:none;overflow-x:auto;white-space:nowrap;background:var(--white);border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.mob-tabs::-webkit-scrollbar{display:none}
+.mob-tabs button{display:inline-flex;align-items:center;gap:4px;background:none;border:none;border-bottom:2px solid transparent;font-size:13px;color:var(--text3);cursor:pointer;padding:10px 14px;white-space:nowrap;transition:all .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.mob-tabs button.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.mob-tabs button .tab-badge{background:var(--red);color:#fff;font-size:10px;border-radius:10px;padding:0 6px;line-height:16px;min-width:16px;text-align:center;font-weight:600}
+.mob-tabs button.active .tab-badge{background:var(--blue)}
+
 @media(max-width:900px){
   body{flex-direction:column}
   .sidebar{position:fixed;top:0;left:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .25s;box-shadow:2px 0 12px rgba(0,0,0,.15);width:260px;max-width:85vw;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -207,13 +216,6 @@ tbody tr:hover{background:#fafbfc}
 .hamburger:active{background:#f3f4f6}
 .hamburger .hb-icon{font-size:20px;line-height:1}
 .sidebar-close-btn{display:none;position:absolute;top:8px;right:8px;width:32px;height:32px;align-items:center;justify-content:center;background:var(--bg);border:none;border-radius:50%;font-size:18px;cursor:pointer;color:var(--text2);z-index:10}
-/* Mobile horizontal tab bar (primary mobile nav) */
-.mob-tabs{display:none;overflow-x:auto;white-space:nowrap;background:var(--white);border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.mob-tabs::-webkit-scrollbar{display:none}
-.mob-tabs button{display:inline-flex;align-items:center;gap:4px;background:none;border:none;border-bottom:2px solid transparent;font-size:13px;color:var(--text3);cursor:pointer;padding:10px 14px;white-space:nowrap;transition:all .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
-.mob-tabs button.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
-.mob-tabs button .tab-badge{background:var(--red);color:#fff;font-size:10px;border-radius:10px;padding:0 6px;line-height:16px;min-width:16px;text-align:center;font-weight:600}
-.mob-tabs button.active .tab-badge{background:var(--blue)}
 .mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);z-index:99;padding:6px 6px env(safe-area-inset-bottom,8px);justify-content:space-around;box-shadow:0 -2px 10px rgba(0,0,0,.06)}
 .mob-nav button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;font-size:10px;color:var(--text3);cursor:pointer;padding:6px 4px;border-radius:8px;min-width:48px;transition:all .15s;-webkit-tap-highlight-color:transparent}
 .mob-nav button:active{background:#f3f4f6}
