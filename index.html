@@ -1450,7 +1450,7 @@ tbody tr:hover{background:#fafbfc}
     D.healthCheckins.sort(function(a,b){return b.date.localeCompare(a.date);});
     if(D.healthCheckins.length===0){div.innerHTML='<div class="empty-state">还没有运动打卡记录，今天开始吧！</div>';return;}
     div.innerHTML=D.healthCheckins.map(function(c,i){
-      return '<div class="checkin-row"><span class="checkin-date">'+c.date+'</span><span class="checkin-content">'+(c.content||'运动打卡')+'</span><span class="checkin-status">'+(c.done?'<span class="tag tag-green">✓ 完成</span>':'<span class="tag tag-red">未完成</span>')+'</span><input type="checkbox" class="checkin-check" '+(c.done?'checked':'')+' data-toggle="hcheckin" data-i="'+i+'"><button class="btn btn-danger btn-sm" data-del="hcheckin" data-i="'+i+'">��</button></div>';
+      return '<div class="checkin-row"><span class="checkin-date">'+c.date+'</span><span class="checkin-content">'+(c.content||'运动打卡')+'</span><span class="checkin-status">'+(c.done?'<span class="tag tag-green">✓ 完成</span>':'<span class="tag tag-red">未完成</span>')+'</span><input type="checkbox" class="checkin-check" '+(c.done?'checked':'')+' data-toggle="hcheckin" data-i="'+i+'"><button class="btn btn-danger btn-sm" data-del="hcheckin" data-i="'+i+'">×</button></div>';
     }).join('');
   }
 
@@ -1489,7 +1489,7 @@ tbody tr:hover{background:#fafbfc}
   }
 
   function openBodyForm(){
-    openModal('身体状态记录',field('date','日期','date',null,todayStr())+field('sleep','昨晚睡眠','select',['很好','一���','不好'])+field('mood','心情','select',['😊 愉快','😐 平静','😞 低落'])+field('note','备注','textarea'),function(){
+    openModal('身体状态记录',field('date','日期','date',null,todayStr())+field('sleep','昨晚睡眠','select',['很好','一般','不好'])+field('mood','心情','select',['😊 愉快','😐 平静','😞 低落'])+field('note','备注','textarea'),function(){
       var d={date:getVal('date')||todayStr(),sleep:getVal('sleep'),mood:getVal('mood'),note:getVal('note')};
       D.bodyRecords.unshift(d);save();renderBodyRecords();return true;
     });
