@@ -132,6 +132,9 @@ tbody tr:hover{background:#fafbfc}
 .vocab-card-col{display:flex;flex-direction:column;align-items:flex-start;padding:12px 16px;background:#f9fafb;border-radius:8px;margin-bottom:8px}
 .vocab-en{font-weight:600;color:var(--text);font-size:14px}
 .vocab-cn{color:var(--text2);font-size:13px}
+.btn-tts{background:none;border:none;cursor:pointer;font-size:16px;padding:2px 4px;vertical-align:middle;opacity:0.6;transition:opacity 0.2s}
+.btn-tts:hover{opacity:1}
+.btn-tts:active{transform:scale(1.2)}
 /* Script */
 .script-cat-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .script-item{background:#f9fafb;border-radius:8px;padding:12px 16px;margin-bottom:8px;border-left:3px solid var(--blue);display:flex;align-items:center;justify-content:space-between}
@@ -330,6 +333,9 @@ tbody tr:hover{background:#fafbfc}
 
 <!-- SECTION: ENGLISH -->
 <section class="section" id="section-english">
+  <div class="card" style="background:linear-gradient(135deg,#faf5ff 0%,#eff6ff 50%,#ecfdf5 100%);">
+    <div id="today-english"></div>
+  </div>
   <div class="card">
     <div class="card-header"><span class="card-title"><span class="icon">📖</span> 矿山设备外贸单词库</span><button class="btn btn-primary btn-sm" id="btn-add-vocab">+ 添加单词</button></div>
     <div class="table-wrap"><table><thead><tr><th>英文</th><th>中文</th><th>分类</th><th>熟练度</th><th>操作</th></tr></thead><tbody id="vocab-tbody"></tbody></table></div>
@@ -999,11 +1005,205 @@ tbody tr:hover{background:#fafbfc}
     document.getElementById('customer-badge').textContent=active.length; updateMobBadges();
   }
 
+  // ==================== ENGLISH POOL & TTS ====================
+  var ENGLISH_POOL = {
+    vocab: [
+      {en:"Crusher",cn:"破碎机",cat:"设备"},{en:"Jaw Crusher",cn:"颚式破碎机",cat:"设备"},
+      {en:"Impact Crusher",cn:"反击式破碎机",cat:"设备"},{en:"Cone Crusher",cn:"圆锥破碎机",cat:"设备"},
+      {en:"VSI Crusher",cn:"立轴冲击式破碎机",cat:"设备"},{en:"Hammer Crusher",cn:"锤式破碎机",cat:"设备"},
+      {en:"Roll Crusher",cn:"辊式破碎机",cat:"设备"},{en:"Vibrating Feeder",cn:"振动给料机",cat:"设备"},
+      {en:"Apron Feeder",cn:"板式给料机",cat:"设备"},{en:"Vibrating Screen",cn:"振动筛",cat:"设备"},
+      {en:"Mobile Crushing Plant",cn:"移动破碎站",cat:"设备"},{en:"Belt Conveyor",cn:"皮带输送机",cat:"设备"},
+      {en:"Sand Washer",cn:"洗砂机",cat:"设备"},{en:"Sand Making Machine",cn:"制砂机",cat:"设备"},
+      {en:"Ball Mill",cn:"球磨机",cat:"设备"},{en:"Raymond Mill",cn:"雷蒙磨",cat:"设备"},
+      {en:"Magnetic Separator",cn:"磁选机",cat:"设备"},{en:"Flotation Machine",cn:"浮选机",cat:"设备"},
+      {en:"Dust Collector",cn:"除尘器",cat:"设备"},{en:"Hopper",cn:"料仓",cat:"设备"},
+      {en:"Chute",cn:"溜槽",cat:"设备"},{en:"Grizzly",cn:"格筛",cat:"设备"},
+      {en:"Idler",cn:"托辊",cat:"设备"},{en:"Pulley",cn:"滚筒",cat:"设备"},
+      {en:"Gearbox",cn:"减速机",cat:"设备"},{en:"Electric Motor",cn:"电动机",cat:"设备"},
+      {en:"Diesel Engine",cn:"柴油发动机",cat:"设备"},{en:"Generator",cn:"发电机",cat:"设备"},
+      {en:"Control Panel",cn:"控制柜",cat:"设备"},{en:"Hydraulic System",cn:"液压系统",cat:"系统"},
+      {en:"Jaw Plate",cn:"颚板",cat:"配件"},{en:"Blow Bar",cn:"打击板",cat:"配件"},
+      {en:"Mantle",cn:"轧臼壁",cat:"配件"},{en:"Concave",cn:"破碎壁",cat:"配件"},
+      {en:"Hammer",cn:"锤头",cat:"配件"},{en:"Side Plate",cn:"侧板",cat:"配件"},
+      {en:"Bearing",cn:"轴承",cat:"配件"},{en:"Spring",cn:"弹簧",cat:"配件"},
+      {en:"Toggle Plate",cn:"肘板",cat:"配件"},{en:"Flywheel",cn:"飞轮",cat:"配件"},
+      {en:"Eccentric Shaft",cn:"偏心轴",cat:"配件"},{en:"Liner",cn:"衬板",cat:"配件"},
+      {en:"Screen Mesh",cn:"筛网",cat:"配件"},{en:"Belt",cn:"皮带",cat:"配件"},
+      {en:"Wear Parts",cn:"易损件",cat:"配件"},
+      {en:"Motor Power",cn:"电机功率",cat:"参数"},{en:"Capacity",cn:"处理能力",cat:"参数"},
+      {en:"Feed Size",cn:"进料粒度",cat:"参数"},{en:"Discharge Size",cn:"出料粒度",cat:"参数"},
+      {en:"Rotation Speed",cn:"转速",cat:"参数"},{en:"Weight",cn:"重量",cat:"参数"},
+      {en:"Dimension",cn:"尺寸",cat:"参数"},{en:"Voltage",cn:"电压",cat:"参数"},
+      {en:"Frequency",cn:"频率",cat:"参数"},{en:"Throughput",cn:"产量",cat:"参数"},
+      {en:"Efficiency",cn:"效率",cat:"参数"},{en:"Reduction Ratio",cn:"破碎比",cat:"参数"},
+      {en:"Moisture Content",cn:"含水率",cat:"参数"},{en:"Bulk Density",cn:"堆积密度",cat:"参数"},
+      {en:"Second-hand",cn:"二手",cat:"商务"},{en:"Inquiry",cn:"询价",cat:"商务"},
+      {en:"Quotation",cn:"报价",cat:"商务"},{en:"Delivery",cn:"交付/发货",cat:"商务"},
+      {en:"After-sales Service",cn:"售后服务",cat:"商务"},{en:"FOB Price",cn:"FOB价",cat:"外贸"},
+      {en:"CIF Price",cn:"CIF价",cat:"外贸"},{en:"Container Shipping",cn:"集装箱运输",cat:"外贸"},
+      {en:"Bill of Lading",cn:"提单",cat:"外贸"},{en:"Customs Clearance",cn:"清关",cat:"外贸"},
+      {en:"Proforma Invoice",cn:"形式发票",cat:"外贸"},{en:"Letter of Credit",cn:"信用证",cat:"外贸"},
+      {en:"Deposit",cn:"定金",cat:"商务"},{en:"Balance Payment",cn:"尾款",cat:"商务"},
+      {en:"Warranty",cn:"质保",cat:"商务"},{en:"Installation",cn:"安装",cat:"商务"},
+      {en:"Inspection",cn:"验货",cat:"商务"},{en:"Test Run",cn:"试运行",cat:"商务"},
+      {en:"Maintenance",cn:"维护保养",cat:"商务"},{en:"Spare Parts",cn:"备件",cat:"商务"},
+      {en:"Technical Support",cn:"技术支持",cat:"商务"},{en:"Discount",cn:"折扣",cat:"商务"},
+      {en:"Negotiation",cn:"谈判",cat:"商务"},{en:"Specification",cn:"规格说明",cat:"商务"},
+      {en:"Catalog",cn:"产品目录",cat:"商务"},{en:"Lead Time",cn:"交货周期",cat:"商务"},
+      {en:"Freight",cn:"运费",cat:"外贸"},{en:"Insurance",cn:"保险",cat:"外贸"},
+      {en:"Packing",cn:"包装",cat:"商务"},{en:"Sample",cn:"样品",cat:"商务"}
+    ],
+    phrases: [
+      {en:"We specialize in premium second-hand mining equipment from Liming Heavy Industry.",cn:"我们主营黎明重工精品二手矿山设备。"},
+      {en:"All our equipment has been inspected and is in excellent working condition.",cn:"所有设备均经过检测，工作状态良好。"},
+      {en:"Would you like to schedule a video inspection of the equipment?",cn:"您想预约设备视频验货吗？"},
+      {en:"Please find the quotation attached.",cn:"请查收附件报价单。"},
+      {en:"What is your required capacity in tons per hour?",cn:"您需要的处理能力是多少（吨/小时）？"},
+      {en:"We can arrange shipment to your nearest port.",cn:"我们可以安排发货到您最近的港口。"},
+      {en:"Our prices are very competitive in the market.",cn:"我们的价格在市场上非常有竞争力。"},
+      {en:"Could you please tell me your target budget?",cn:"能否告诉我您的目标预算？"},
+      {en:"We offer a 6-month warranty on all second-hand equipment.",cn:"所有二手设备我们提供6个月质保。"},
+      {en:"The equipment is available for immediate delivery.",cn:"设备可立即发货。"},
+      {en:"Would you like me to send you the technical specifications?",cn:"需要我把技术参数发给您吗？"},
+      {en:"Our engineer can provide online installation guidance.",cn:"我们的工程师可以提供在线安装指导。"},
+      {en:"We accept T/T, L/C, and PayPal for payment.",cn:"我们接受电汇、信用证和PayPal付款。"},
+      {en:"A 30% deposit is required to confirm the order.",cn:"确认订单需要支付30%定金。"},
+      {en:"The balance should be paid before shipment.",cn:"尾款需在发货前付清。"},
+      {en:"We can provide original factory certificates and manuals.",cn:"我们可以提供原厂证书和说明书。"},
+      {en:"How many sets of wear parts would you like to order?",cn:"您需要订购多少套易损件？"},
+      {en:"The delivery time is about 15 to 20 days after receiving the deposit.",cn:"收到定金后约15到20天交货。"},
+      {en:"We have been in this business for over 10 years.",cn:"我们在这个行业已经10多年了。"},
+      {en:"Can I send you our latest product catalog via WhatsApp?",cn:"我可以通过WhatsApp发给您最新产品目录吗？"},
+      {en:"The price includes packaging but excludes shipping and insurance.",cn:"价格包含包装，不含运费和保险。"},
+      {en:"We can customize the equipment configuration based on your needs.",cn:"我们可以根据您的需求定制设备配置。"},
+      {en:"Would you prefer FOB or CIF terms?",cn:"您倾向于FOB还是CIF条款？"},
+      {en:"Let me calculate the freight cost to your port.",cn:"让我计算一下到您港口的运费。"},
+      {en:"We have a large inventory of spare parts in stock.",cn:"我们有大量备件库存。"},
+      {en:"The motor can be customized to your local voltage standard.",cn:"电机可根据您当地电压标准定制。"},
+      {en:"I can arrange a video call to show you the equipment in operation.",cn:"我可以安排视频通话让您看看设备运行情况。"},
+      {en:"Our equipment has been exported to over 30 countries.",cn:"我们的设备已出口到30多个国家。"},
+      {en:"Please let me know if you need any clarification on the quotation.",cn:"如果对报价有任何疑问请告诉我。"},
+      {en:"We look forward to establishing a long-term business relationship with you.",cn:"我们期待与您建立长期合作关系。"}
+    ],
+    conversations: [
+      {scene:"寒暄问候",en:"Hi! How are you doing today?",cn:"嗨！今天怎么样？"},
+      {scene:"寒暄问候",en:"Good morning! Hope you're having a great day.",cn:"早上好！希望你今天过得愉快。"},
+      {scene:"寒暄问候",en:"Long time no talk! How's everything going?",cn:"好久没聊了！一切都还好吗？"},
+      {scene:"寒暄问候",en:"Nice to meet you! I'm Susu from Zhengzhou, China.",cn:"很高兴认识你！我是素素，来自中国郑州。"},
+      {scene:"寒暄问候",en:"Happy weekend! Any plans?",cn:"周末愉快！有什么计划吗？"},
+      {scene:"寒暄问候",en:"How was your week? Hope everything went well.",cn:"这周过得怎么样？希望一切顺利。"},
+      {scene:"寒暄问候",en:"Good evening! Just checking in to say hi.",cn:"晚上好！就是来打个招呼。"},
+      {scene:"寒暄问候",en:"It's been a while! How have you been?",cn:"有阵子没联系了！你最近怎么样？"},
+      {scene:"寒暄问候",en:"Hope you're doing well and staying healthy!",cn:"希望你一切都好，身体健康！"},
+      {scene:"寒暄问候",en:"Good to hear from you! How's business?",cn:"收到你的消息很高兴！生意怎么样？"},
+      {scene:"寒暄问候",en:"What time is it there? I hope I'm not disturbing you.",cn:"你那边几点了？希望没打扰到你。"},
+      {scene:"寒暄问候",en:"Did you have a good rest last night?",cn:"昨晚休息得好吗？"},
+      {scene:"寒暄问候",en:"Any exciting news on your side?",cn:"你那边有什么好消息吗？"},
+      {scene:"寒暄问候",en:"It's always a pleasure talking with you!",cn:"和你聊天总是很愉快！"},
+      {scene:"寒暄问候",en:"Thanks for getting back to me so quickly!",cn:"谢谢你这么快回复我！"},
+      {scene:"自我介绍",en:"I run a second-hand mining equipment business in Zhengzhou.",cn:"我在郑州经营二手矿山设备生意。"},
+      {scene:"自我介绍",en:"We have our own equipment yard, you're welcome to visit anytime!",cn:"我们有自有设备堆场，随时欢迎来参观！"},
+      {scene:"自我介绍",en:"I've been in the mining equipment industry for several years.",cn:"我在矿山设备行业已经好几年了。"},
+      {scene:"自我介绍",en:"Our company is based in Zhengzhou, the heavy machinery hub of China.",cn:"我们公司位于中国重工机械之都郑州。"},
+      {scene:"自我介绍",en:"We mainly deal with crushers, screens, and feeding equipment.",cn:"我们主要做破碎机、振动筛和给料设备。"},
+      {scene:"自我介绍",en:"I can source any type of mining equipment you need.",cn:"您需要任何类型的矿山设备我都能找到。"},
+      {scene:"自我介绍",en:"We work directly with factories, so our prices are very competitive.",cn:"我们和工厂直接合作，所以价格很有竞争力。"},
+      {scene:"自我介绍",en:"My English might not be perfect, but I'll do my best to help you!",cn:"我英语可能不太好，但我会尽力帮您！"},
+      {scene:"自我介绍",en:"You can find me on WhatsApp anytime, I'm very responsive.",cn:"随时可以在WhatsApp上找到我，我回复很快。"},
+      {scene:"自我介绍",en:"Let me know what equipment you're looking for, and I'll find the best option for you.",cn:"告诉我您需要什么设备，我帮您找最合适的。"},
+      {scene:"闲聊话题",en:"How's the weather over there? It's been really hot here in Zhengzhou.",cn:"你那边天气怎么样？郑州这边最近特别热。"},
+      {scene:"闲聊话题",en:"Have you been to China before? Zhengzhou is a great city with amazing food.",cn:"你来过中国吗？郑州是个很棒的城市，美食特别多。"},
+      {scene:"闲聊话题",en:"What kind of projects are you working on these days?",cn:"你最近在做什么项目？"},
+      {scene:"闲聊话题",en:"Do you also deal with other types of machinery?",cn:"你还做其他类型的机械设备吗？"},
+      {scene:"闲聊话题",en:"The mining industry seems to be picking up this year, right?",cn:"今年矿业好像在回暖，是吗？"},
+      {scene:"闲聊话题",en:"How's the construction market in your country?",cn:"你们国家的建筑市场怎么样？"},
+      {scene:"闲聊话题",en:"Have you attended any trade shows recently?",cn:"最近有参加什么展会吗？"},
+      {scene:"闲聊话题",en:"What's the biggest challenge in your business right now?",cn:"你目前生意上最大的挑战是什么？"},
+      {scene:"闲聊话题",en:"I heard the demand for aggregates is growing in your region.",cn:"我听说你们那边对骨料的需求在增长。"},
+      {scene:"闲聊话题",en:"Do you prefer email or WhatsApp for communication?",cn:"你更喜欢用邮件还是WhatsApp沟通？"},
+      {scene:"WhatsApp日常",en:"No rush, take your time to think about it.",cn:"不着急，你慢慢考虑。"},
+      {scene:"WhatsApp日常",en:"I'll send you some photos and videos tomorrow.",cn:"我明天给你发些照片和视频。"},
+      {scene:"WhatsApp日常",en:"Let me know if you have any questions, happy to help!",cn:"有任何问题随时问我，很乐意帮忙！"},
+      {scene:"WhatsApp日常",en:"Sorry for the late reply, was out visiting the equipment yard.",cn:"抱歉回复晚了，刚去设备场地了。"},
+      {scene:"WhatsApp日常",en:"Sounds good! Let's keep in touch.",cn:"好的！保持联系。"},
+      {scene:"WhatsApp日常",en:"I just shared some new equipment videos, check them out when you have time.",cn:"我刚发了一些新设备视频，有空看看。"},
+      {scene:"WhatsApp日常",en:"Safe travels! Talk to you soon.",cn:"一路平安！回头聊。"},
+      {scene:"WhatsApp日常",en:"My WhatsApp is always open if you need anything.",cn:"我WhatsApp一直在线，有事随时找我。"},
+      {scene:"WhatsApp日常",en:"I'll prepare the quotation and send it to you by tonight.",cn:"我准备一下报价，今晚发给你。"},
+      {scene:"WhatsApp日常",en:"No problem at all, I understand completely.",cn:"完全没问题，我完全理解。"},
+      {scene:"WhatsApp日常",en:"That's great news! Let's move forward with the next steps.",cn:"好消息！我们进行下一步吧。"},
+      {scene:"WhatsApp日常",en:"Thanks for your trust, you won't be disappointed!",cn:"感谢你的信任，你不会失望的！"},
+      {scene:"产品介绍",en:"This model is one of our best-sellers, very popular in the market.",cn:"这个型号是我们的畅销款，市场很受欢迎。"},
+      {scene:"产品介绍",en:"The equipment is in great condition, barely used.",cn:"设备状态很好，几乎没用过。"},
+      {scene:"产品介绍",en:"Let me send you a short video of the equipment running.",cn:"我给你发一段设备运行的视频。"},
+      {scene:"产品介绍",en:"This machine can process up to 200 tons per hour.",cn:"这台机器每小时可处理200吨。"},
+      {scene:"产品介绍",en:"The jaw plates were recently replaced, so they're brand new.",cn:"颚板刚换过，全新的。"},
+      {scene:"产品介绍",en:"We have two units available right now, first come first served.",cn:"现在有两台现货，先到先得。"},
+      {scene:"产品介绍",en:"This model is perfect for medium-sized quarries.",cn:"这个型号非常适合中型采石场。"},
+      {scene:"产品介绍",en:"The maintenance cost for this equipment is very low.",cn:"这台设备的维护成本很低。"},
+      {scene:"跟进促单",en:"Just following up on the quotation I sent last week.",cn:"跟进一下上周发的报价。"},
+      {scene:"跟进促单",en:"Have you had a chance to review the pricing?",cn:"您有空看过报价了吗？"},
+      {scene:"跟进促单",en:"Is there anything else you'd like to know before making a decision?",cn:"在做决定前还有什么想了解的吗？"},
+      {scene:"跟进促单",en:"The price is valid for 15 days, shall we move forward?",cn:"报价15天内有效，我们推进吗？"},
+      {scene:"跟进促单",en:"I can offer a small discount if we can close the deal this month.",cn:"如果本月能成交，我可以给一点折扣。"}
+    ]
+  };
+
+  function speak(text){
+    if(!('speechSynthesis' in window)){alert('您的浏览器不支持语音功能');return;}
+    window.speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(text);
+    u.lang='en-US';u.rate=0.85;u.pitch=1;
+    window.speechSynthesis.speak(u);
+  }
+
+  function dayIndex(){ return Math.floor(Date.now()/86400000); }
+
+  function todaysPicks(arr,count){
+    var di=dayIndex(), n=arr.length, result=[];
+    for(var i=0;i<count;i++){ result.push(arr[(di*count+i)%n]); }
+    return result;
+  }
+
+  function renderTodayEnglish(){
+    var div=document.getElementById('today-english');
+    if(!div) return;
+    var di=dayIndex();
+    var vPicks=todaysPicks(ENGLISH_POOL.vocab,5);
+    var pPicks=todaysPicks(ENGLISH_POOL.phrases,3);
+    var cPicks=todaysPicks(ENGLISH_POOL.conversations,3);
+    var d=new Date();
+    var dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var h='';
+    h+='<div style="text-align:center;margin-bottom:16px;"><div style="font-size:13px;color:var(--text3);">'+dateStr+' 第 '+(di%30+1)+' 天</div><div style="font-size:18px;font-weight:700;color:var(--text);margin-top:4px;">今日英语学习</div></div>';
+    // Today's words
+    h+='<div style="margin-bottom:16px;"><div style="font-size:13px;font-weight:700;color:var(--purple);margin-bottom:8px;">📖 今日单词（5个）</div>';
+    vPicks.forEach(function(v){
+      h+='<div class="vocab-card" style="background:#faf5ff;"><div><div class="vocab-en">'+v.en+' <button class="btn-tts" data-speak="'+encodeURIComponent(v.en)+'" title="朗读">🔊</button></div><div class="vocab-cn">'+v.cn+'</div><span class="tag tag-blue" style="margin-top:4px;display:inline-block;">'+v.cat+'</span></div></div>';
+    });
+    h+='</div>';
+    // Today's phrases
+    h+='<div style="margin-bottom:16px;"><div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:8px;">✉️ 今日外贸句子（3句）</div>';
+    pPicks.forEach(function(p){
+      h+='<div class="vocab-card-col" style="background:#eff6ff;"><div class="vocab-en">'+p.en+' <button class="btn-tts" data-speak="'+encodeURIComponent(p.en)+'" title="朗读">🔊</button></div><div class="vocab-cn" style="margin-top:4px;">'+p.cn+'</div></div>';
+    });
+    h+='</div>';
+    // Today's conversations
+    h+='<div style="margin-bottom:8px;"><div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px;">🗣️ 今日口语（3句）</div>';
+    cPicks.forEach(function(c){
+      h+='<div class="vocab-card-col" style="background:#ecfdf5;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">'+c.scene+'</div><div class="vocab-en">'+c.en+' <button class="btn-tts" data-speak="'+encodeURIComponent(c.en)+'" title="朗读">🔊</button></div><div class="vocab-cn" style="margin-top:4px;">'+c.cn+'</div></div>';
+    });
+    h+='</div>';
+    h+='<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text3);">每天自动更新 · 共'+ENGLISH_POOL.vocab.length+'个单词 + '+ENGLISH_POOL.phrases.length+'个句子 + '+ENGLISH_POOL.conversations.length+'句口语</div>';
+    div.innerHTML=h;
+  }
+
   // ==================== ENGLISH ====================
   function renderVocab(){
     document.getElementById('vocab-tbody').innerHTML=D.vocabulary.map(function(v,i){
       var lvl=v.level==='熟练'?'tag-green':v.level==='了解'?'tag-orange':'tag-gray';
-      return '<tr><td><strong>'+v.en+'</strong></td><td>'+v.cn+'</td><td><span class="tag tag-blue">'+v.cat+'</span></td><td><span class="tag '+lvl+'">'+v.level+'</span></td><td class="table-actions"><button class="btn btn-outline btn-sm" data-edit="vocab" data-i="'+i+'">编辑</button><button class="btn btn-danger btn-sm" data-del="vocab" data-i="'+i+'">删除</button></td></tr>';
+      return '<tr><td><strong>'+v.en+'</strong> <button class="btn-tts" data-speak="'+encodeURIComponent(v.en)+'" title="朗读">🔊</button></td><td>'+v.cn+'</td><td><span class="tag tag-blue">'+v.cat+'</span></td><td><span class="tag '+lvl+'">'+v.level+'</span></td><td class="table-actions"><button class="btn btn-outline btn-sm" data-edit="vocab" data-i="'+i+'">编辑</button><button class="btn btn-danger btn-sm" data-del="vocab" data-i="'+i+'">删除</button></td></tr>';
     }).join('');
   }
 
@@ -1022,7 +1222,7 @@ tbody tr:hover{background:#fafbfc}
 
   function renderPhrases(){
     document.getElementById('phrases-list').innerHTML=D.phrases.map(function(p,i){
-      return '<div class="vocab-card"><div><div class="vocab-en">'+p.en+'</div><div class="vocab-cn">'+p.cn+'</div></div><button class="btn btn-danger btn-sm" data-del="phrase" data-i="'+i+'">删除</button></div>';
+      return '<div class="vocab-card"><div><div class="vocab-en">'+p.en+' <button class="btn-tts" data-speak="'+encodeURIComponent(p.en)+'" title="朗读">🔊</button></div><div class="vocab-cn">'+p.cn+'</div></div><button class="btn btn-danger btn-sm" data-del="phrase" data-i="'+i+'">删除</button></div>';
     }).join('');
   }
 
@@ -1069,7 +1269,7 @@ tbody tr:hover{background:#fafbfc}
 
   // -- Daily Conversation Phrases --
   function renderDailyPhrases(){
-    var sceneOrder=['寒暄问候','自我介绍','闲聊话题','WhatsApp日常'];
+    var sceneOrder=['寒暄问候','自我介绍','闲聊话题','WhatsApp日常','产品介绍','跟进促单'];
     var groups={};
     D.dailyPhrases.forEach(function(p){ if(!groups[p.scene]) groups[p.scene]=[]; groups[p.scene].push(p); });
     var container=document.getElementById('daily-phrases-container'), html='';
@@ -1078,7 +1278,7 @@ tbody tr:hover{background:#fafbfc}
       html+='<div style="margin-bottom:14px;"><div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;">📌 '+scene+'</div>';
       groups[scene].forEach(function(p,gi){
         var realIdx=D.dailyPhrases.indexOf(p);
-        html+='<div class="script-item" style="border-left-color:var(--purple);"><div class="script-text"><div style="font-weight:600;margin-bottom:2px;">'+p.en+'</div><div style="font-size:12px;color:var(--text2);">'+p.cn+'</div></div><div class="table-actions" style="flex-shrink:0;margin-left:8px;"><button class="btn btn-danger btn-sm" data-del="dailyphrase" data-i="'+realIdx+'">删除</button></div></div>';
+        html+='<div class="script-item" style="border-left-color:var(--purple);"><div class="script-text"><div style="font-weight:600;margin-bottom:2px;">'+p.en+' <button class="btn-tts" data-speak="'+encodeURIComponent(p.en)+'" title="朗读">🔊</button></div><div style="font-size:12px;color:var(--text2);">'+p.cn+'</div></div><div class="table-actions" style="flex-shrink:0;margin-left:8px;"><button class="btn btn-danger btn-sm" data-del="dailyphrase" data-i="'+realIdx+'">删除</button></div></div>';
       });
       html+='</div>';
     });
@@ -1086,7 +1286,7 @@ tbody tr:hover{background:#fafbfc}
   }
 
   function openDailyPhraseForm(){
-    openModal('添加日常口语',field('scene','场景','select',['寒暄问候','自我介绍','闲聊话题','WhatsApp日常'])+field('en','英文句子','textarea')+field('cn','中文翻译','text'),function(){
+    openModal('添加日常口语',field('scene','场景','select',['寒暄问候','自我介绍','闲聊话题','WhatsApp日常','产品介绍','跟进促单'])+field('en','英文句子','textarea')+field('cn','中文翻译','text'),function(){
       var d={scene:getVal('scene'),en:getVal('en'),cn:getVal('cn')};
       if(!d.en||!d.cn){alert('请填写完整');return false;}
       D.dailyPhrases.push(d);save();renderDailyPhrases();return true;
@@ -1298,6 +1498,12 @@ tbody tr:hover{background:#fafbfc}
   // ==================== EVENT DELEGATION ====================
   document.addEventListener('click',function(e){
     var t=e.target, ds;
+    // ---- TTS speak buttons ----
+    if(t.classList && t.classList.contains('btn-tts')){
+      var text=t.getAttribute('data-speak');
+      if(text){ speak(decodeURIComponent(text)); }
+      e.stopPropagation();return;
+    }
     // ---- Direct button IDs ----
     if(t.id==='btn-add-vocab'){ openVocabForm();return; }
     if(t.id==='btn-add-phrase'){ openPhraseForm();return; }
@@ -1366,7 +1572,7 @@ tbody tr:hover{background:#fafbfc}
 
   // ==================== INIT ====================
   function renderAll(){
-    var fns = [renderHome,renderVocab,renderPhrases,renderDailyPhrases,renderEnglishCheckins,renderReviewWords,
+    var fns = [renderHome,renderTodayEnglish,renderVocab,renderPhrases,renderDailyPhrases,renderEnglishCheckins,renderReviewWords,
       renderCustomers,renderFollowLogs,renderCalendar,
       renderEquipmentArchive,renderInventory,renderFAQ,renderForeignNotes,
       renderScripts,renderHealthCheckins,renderExerciseRecords,renderBodyRecords];
